@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="The Harmonia Project — finding common ground through dialogue, connection, and action." />
+  <title>The Harmonia Project</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <button class="icon-button back-button" id="backButton" aria-label="Return to home" hidden>←</button>
+    <button class="wordmark" id="homeButton" aria-label="Go to home">
+      TheHarmoniaProject.Org
+    </button>
+    <button class="edit-toggle" id="editToggle" aria-pressed="false">Edit</button>
+  </header>
+
+  <main id="app">
+    <section class="home-grid active" id="home" aria-label="Main navigation">
+      <button class="panel panel-about" data-target="about">
+        <span>What is<br>The Harmonia<br>Project</span>
+      </button>
+      <button class="panel panel-connect" data-target="connect">
+        <span>Connect</span>
+      </button>
+      <button class="panel panel-upcoming" data-target="upcoming">
+        <span>Upcoming</span>
+      </button>
+      <button class="panel panel-gallery" data-target="gallery">
+        <span>Gallery</span>
+      </button>
+    </section>
+
+    <section class="page page-about" id="about" aria-labelledby="about-title">
+      <div class="page-inner readable">
+        <p class="eyebrow">About</p>
+        <h1 id="about-title" data-editable="aboutTitle">What is The Harmonia Project</h1>
+        <div class="editable-copy" data-editable="aboutBody">
+          <p>The Harmonia Project is a philanthropic initiative dedicated to fostering greater community harmony. In a time of increasing division, we believe meaningful progress begins by finding common ground, encouraging understanding, and bringing people together around shared values and shared purpose.</p>
+          <p>Each year, the Harmonia Project focuses on a pressing issue affecting our communities. Through dialogue, education, service, advocacy, and collaborative action, we strive to create lasting, positive change while empowering individuals to become active leaders and engaged citizens.</p>
+          <p>Our mission is rooted in the belief that lasting harmony is not achieved through agreement alone, but through respectful conversation, genuine connection, and collective action.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="page page-connect" id="connect" aria-labelledby="connect-title">
+      <div class="connect-layout">
+        <div class="connect-copy">
+          <p class="eyebrow">Connect</p>
+          <h1 id="connect-title" data-editable="connectTitle">Connection is where change begins.</h1>
+          <div class="editable-copy" data-editable="connectBody">
+            <p>The Harmonia Project exists because meaningful progress starts when people choose to listen, collaborate, and act together. Whether you're an individual with an idea, a nonprofit seeking a partner, a business looking to give back, or someone searching for a way to make a difference, we'd love to hear from you.</p>
+            <p>Every conversation has the potential to spark a new initiative, every partnership can strengthen a community, and every person has something valuable to contribute.</p>
+          </div>
+        </div>
+
+        <form class="contact-card" id="contactForm">
+          <h2>Start a conversation</h2>
+          <label>Name<input name="name" type="text" required /></label>
+          <label>Email<input name="email" type="email" required /></label>
+          <label>Phone<input name="phone" type="tel" /></label>
+          <label>I am interested in
+            <select name="interest">
+              <option>Volunteering</option>
+              <option>Partnering</option>
+              <option>Sponsoring an event</option>
+              <option>Speaking or presenting</option>
+              <option>General information</option>
+            </select>
+          </label>
+          <label>Message<textarea name="message" rows="4"></textarea></label>
+          <label class="consent"><input type="checkbox" name="consent" /> I agree to receive occasional updates.</label>
+          <button class="primary-button" type="submit">Send inquiry</button>
+          <p class="privacy-note">Your information is used only to respond to your inquiry and, when selected, send occasional Harmonia updates.</p>
+          <p class="form-status" id="formStatus" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
+    <section class="page page-upcoming" id="upcoming" aria-labelledby="upcoming-title">
+      <div class="page-inner">
+        <p class="eyebrow light">Upcoming</p>
+        <div class="section-heading-row">
+          <h1 id="upcoming-title" data-editable="upcomingTitle">Gatherings with purpose.</h1>
+          <button class="secondary-button editor-only" id="addEvent">+ Add event</button>
+        </div>
+        <div class="event-grid" id="eventGrid"></div>
+      </div>
+    </section>
+
+    <section class="page page-gallery" id="gallery" aria-labelledby="gallery-title">
+      <div class="page-inner">
+        <p class="eyebrow light">Gallery</p>
+        <div class="section-heading-row">
+          <h1 id="gallery-title" data-editable="galleryTitle">Moments of connection.</h1>
+          <label class="secondary-button editor-only upload-label">
+            + Add photos
+            <input id="photoInput" type="file" accept="image/*" multiple hidden />
+          </label>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </section>
+  </main>
+
+  <aside class="edit-notice" id="editNotice" hidden>
+    Editing is on. Click text to rewrite it. Event and photo controls are now visible.
+  </aside>
+
+  <footer class="site-footer">
+    <span>© <span id="year"></span> The Harmonia Project · <button class="text-link" id="privacyButton" type="button">Privacy</button></span>
+    <button class="donate-button" id="donateButton">Support the Project</button>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
