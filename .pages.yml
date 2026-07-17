@@ -3,12 +3,39 @@ media:
   output: /images
 
 content:
-  - name: site
+   - name: homepage
     label: Homepage
     type: file
     path: content/homepage.json
     format: json
     fields:
+      - name: heroTitle
+        label: Hero Title
+        type: string
+
+      - name: heroSubtitle
+        label: Hero Subtitle
+        type: text
+
+      - name: missionTitle
+        label: Mission Title
+        type: string
+
+      - name: missionText
+        label: Mission Text
+        type: text
+
+      - name: featuredEventTitle
+        label: Featured Event Title
+        type: string
+
+      - name: featuredEventText
+        label: Featured Event Text
+        type: text
+
+      - name: galleryPreviewTitle
+        label: Gallery Preview Title
+        type: string
       - name: aboutTitle
         label: About Title
         type: string
