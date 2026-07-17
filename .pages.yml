@@ -44,3 +44,25 @@ content:
       - name: galleryTitle
         label: Gallery Title
         type: string
+
+  - name: about
+    label: About
+    type: file
+    path: content/about.json
+    format: json
+    fields:
+      - name: title
+        label: Title
+        type: string
+
+      - name: paragraph1
+        label: Paragraph 1
+        type: text
+
+      - name: paragraph2
+        label: Paragraph 2
+        type: text
+
+      - name: paragraph3
+        label: Paragraph 3
+        type: text
