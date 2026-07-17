@@ -278,3 +278,15 @@ async function loadEditableContent() {
 }
 
 loadEditableContent();
+const mobileLanding = document.getElementById("mobileLanding");
+const mobileBeginButton = document.getElementById("mobileBeginButton");
+
+mobileBeginButton?.addEventListener("click", () => {
+  mobileLanding.classList.add("is-leaving");
+
+  setTimeout(() => {
+    mobileLanding.hidden = true;
+    document.body.classList.add("mobile-site-entered");
+    window.scrollTo(0, 0);
+  }, 700);
+});

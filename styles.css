@@ -445,3 +445,65 @@ body:not(.internal-page) .site-footer {
   opacity: .6;
   cursor: wait;
 }
+/* Mobile soft landing */
+.mobile-landing {
+  display: none;
+}
+
+@media (max-width: 560px) {
+  .mobile-landing {
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    padding: 3rem 1.5rem;
+    background: var(--paper);
+    text-align: center;
+  }
+
+  .mobile-landing-inner {
+    width: 100%;
+    max-width: 32rem;
+  }
+
+  .mobile-landing-kicker {
+    margin: 0 0 2rem;
+    font-size: 1rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .mobile-landing h1 {
+    margin: 0;
+    font-size: clamp(2.4rem, 11vw, 4.2rem);
+    line-height: 1.02;
+    font-weight: normal;
+    letter-spacing: -0.04em;
+  }
+
+  .mobile-begin-button {
+    margin-top: 3rem;
+    border: 1px solid var(--ink);
+    background: transparent;
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+  }
+}
+/* Mobile landing exit */
+
+.mobile-landing {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.7s ease,
+    visibility 0.7s ease;
+}
+
+.mobile-landing.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.mobile-site-entered .mobile-landing {
+  display: none;
+}
