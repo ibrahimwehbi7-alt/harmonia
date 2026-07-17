@@ -3,7 +3,7 @@ media:
   output: /images
 
 content:
-   - name: homepage
+  - name: homepage
     label: Homepage
     type: file
     path: content/homepage.json
@@ -35,41 +35,6 @@ content:
 
       - name: galleryPreviewTitle
         label: Gallery Preview Title
-        type: string
-      - name: aboutTitle
-        label: About Title
-        type: string
-
-      - name: aboutParagraph1
-        label: About Paragraph 1
-        type: text
-
-      - name: aboutParagraph2
-        label: About Paragraph 2
-        type: text
-
-      - name: aboutParagraph3
-        label: About Paragraph 3
-        type: text
-
-      - name: connectTitle
-        label: Connect Title
-        type: string
-
-      - name: connectParagraph1
-        label: Connect Paragraph 1
-        type: text
-
-      - name: connectParagraph2
-        label: Connect Paragraph 2
-        type: text
-
-      - name: upcomingTitle
-        label: Upcoming Events Title
-        type: string
-
-      - name: galleryTitle
-        label: Gallery Title
         type: string
 
   - name: about
