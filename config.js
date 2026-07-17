@@ -6,7 +6,7 @@
  */
 window.HARMONIA_CONFIG = {
   // Example: "https://formspree.io/f/abcdwxyz"
-  formspreeEndpoint: "PASTE_FORMSPREE_ENDPOINT_HERE",
+  formspreeEndpoint: "https://formspree.io/f/xnjeppnv",
 
   // Example Stripe Payment Link: "https://buy.stripe.com/..."
   stripePaymentLink: "PASTE_STRIPE_PAYMENT_LINK_HERE",
