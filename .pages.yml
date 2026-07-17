@@ -6,7 +6,7 @@ content:
   - name: site
     label: Homepage
     type: file
-    path: content/site.json
+    path: content/homepage.json
     format: json
     fields:
       - name: aboutTitle
