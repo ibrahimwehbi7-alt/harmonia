@@ -23,7 +23,7 @@ const state = {
 const pages = [...document.querySelectorAll(".page")];
 const home = document.getElementById("home");
 const backButton = document.getElementById("backButton");
-const editToggle = document.getElementById("editToggle");
+
 const editNotice = document.getElementById("editNotice");
 
 function openPage(id) {
@@ -52,25 +52,11 @@ document.querySelectorAll(".panel").forEach(panel => {
 backButton.addEventListener("click", showHome);
 document.getElementById("homeButton").addEventListener("click", showHome);
 
-function enableEditing(enabled) {
-  state.editMode = enabled;
-  document.body.classList.toggle("edit-mode", enabled);
-  editToggle.setAttribute("aria-pressed", String(enabled));
-  editToggle.textContent = enabled ? "Done" : "Edit";
-  editNotice.hidden = !enabled;
 
-  document.querySelectorAll("[data-editable]").forEach(el => {
-    el.contentEditable = enabled ? "true" : "false";
-    if (enabled) {
-      el.addEventListener("input", saveEditable);
-    } else {
-      el.removeEventListener("input", saveEditable);
-    }
-  });
 
   renderEvents();
   renderPhotos();
-}
+
 
 function saveEditable(event) {
   localStorage.setItem(`harmonia-${event.currentTarget.dataset.editable}`, event.currentTarget.innerHTML);
@@ -81,7 +67,7 @@ document.querySelectorAll("[data-editable]").forEach(el => {
   if (saved) el.innerHTML = saved;
 });
 
-editToggle.addEventListener("click", () => enableEditing(!state.editMode));
+
 
 function renderEvents() {
   const grid = document.getElementById("eventGrid");
