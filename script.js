@@ -253,3 +253,28 @@ document.getElementById("privacyButton")?.addEventListener("click", () => {
 });
 
 loadCloudflareAnalytics();
+async function loadEditableContent() {
+  try {
+    const response = await fetch("/content/site.json?v=1");
+
+    if (!response.ok) {
+      throw new Error("Could not load site content.");
+    }
+
+    const content = await response.json();
+
+    const editableElements = document.querySelectorAll("[data-content]");
+
+    editableElements.forEach((element) => {
+      const key = element.dataset.content;
+
+      if (content[key]) {
+        element.textContent = content[key];
+      }
+    });
+  } catch (error) {
+    console.error("Harmonia content error:", error);
+  }
+}
+
+loadEditableContent();
