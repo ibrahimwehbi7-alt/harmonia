@@ -28,21 +28,49 @@ const editNotice = document.getElementById("editNotice");
 
 function openPage(id) {
   home.classList.add("leaving");
+
   setTimeout(() => {
     home.classList.remove("active", "leaving");
-    pages.forEach(page => page.classList.toggle("active", page.id === id));
+
+    const selectedPage = document.getElementById(id);
+
+    pages.forEach(page => {
+      page.classList.toggle("active", page === selectedPage);
+    });
+
     document.body.classList.add("internal-page");
     backButton.hidden = false;
-    window.scrollTo(0, 0);
+
+    selectedPage.scrollTop = 0;
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto"
+    });
   }, 260);
 }
 
 function showHome() {
-  pages.forEach(page => page.classList.remove("active"));
+  pages.forEach(page => {
+    page.classList.remove("active");
+    page.scrollTop = 0;
+  });
+
   document.body.classList.remove("internal-page");
   home.classList.add("active");
   backButton.hidden = true;
-  window.scrollTo(0, 0);
+
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
+
+  window.scrollTo({
+    top: 0,
+    left: 0,
+    behavior: "instant"
+  });
 }
 
 document.querySelectorAll(".panel").forEach(panel => {

@@ -86,8 +86,9 @@ button { color: inherit; }
 }
 
 main {
+    position: relative;
     min-height: calc(100vh - 132px);
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .home-grid {
@@ -139,11 +140,18 @@ main {
 .panel-gallery { background: var(--navy); color: white; }
 
 .page {
-  height: calc(100vh - 132px);
+  position: absolute;
+  top: 132px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
   display: none;
   opacity: 0;
   transform: translateX(42px);
   overflow-y: auto;
+
+  z-index: 10;
 }
 
 .page.active {
