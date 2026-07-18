@@ -141,7 +141,7 @@ main {
 
 .page {
   position: absolute;
-  top: 132px;
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
@@ -441,14 +441,17 @@ body.internal-page .page {
     min-height: calc(100svh - 76px);
   }
 
-  .home-grid,
-  .home-grid.active {
-    width: 100%;
-    height: calc(100svh - 76px);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-  }
+.home-grid {
+  display: none;
+  width: 100%;
+  height: calc(100svh - 76px);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+}
+
+.home-grid.active {
+  display: grid;
+}
 
   .panel {
     width: 100%;
