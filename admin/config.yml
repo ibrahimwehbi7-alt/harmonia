@@ -1,0 +1,94 @@
+backend:
+  name: github
+  repo: ibrahimwehbi7-alt/harmonia
+  branch: main
+
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+publish_mode: simple
+
+collections:
+  - label: "Website Content"
+    name: "website"
+    files:
+      - label: "Main Website"
+        name: "main"
+        file: "content/site.json"
+        format: "json"
+        fields:
+          - label: "About Title"
+            name: "aboutTitle"
+            widget: "string"
+
+          - label: "About Paragraph One"
+            name: "aboutParagraph1"
+            widget: "text"
+
+          - label: "About Paragraph Two"
+            name: "aboutParagraph2"
+            widget: "text"
+            required: false
+
+          - label: "About Paragraph Three"
+            name: "aboutParagraph3"
+            widget: "text"
+            required: false
+
+          - label: "Connect Title"
+            name: "connectTitle"
+            widget: "string"
+
+          - label: "Connect Paragraph One"
+            name: "connectParagraph1"
+            widget: "text"
+
+          - label: "Connect Paragraph Two"
+            name: "connectParagraph2"
+            widget: "text"
+            required: false
+
+          - label: "Upcoming Title"
+            name: "upcomingTitle"
+            widget: "string"
+
+          - label: "Gallery Title"
+            name: "galleryTitle"
+            widget: "string"
+
+          - label: "Events"
+            name: "events"
+            widget: "list"
+            required: false
+            summary: "{{fields.date}} — {{fields.title}}"
+            fields:
+              - label: "Date"
+                name: "date"
+                widget: "string"
+
+              - label: "Event Title"
+                name: "title"
+                widget: "string"
+
+              - label: "Description"
+                name: "description"
+                widget: "text"
+
+          - label: "Gallery Photos"
+            name: "photos"
+            widget: "list"
+            required: false
+            summary: "{{fields.caption}}"
+            fields:
+              - label: "Photo"
+                name: "image"
+                widget: "image"
+
+              - label: "Alternative Text"
+                name: "alt"
+                widget: "string"
+
+              - label: "Caption"
+                name: "caption"
+                widget: "string"
+                required: false
