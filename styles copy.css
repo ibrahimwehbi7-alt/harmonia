@@ -360,22 +360,72 @@ main { min-height: calc(100vh - 132px); overflow: hidden; }
   background: var(--ink);
   color: white;
 }
-/* Hide the footer on the homepage and internal pages */
-body.internal-page .site-footer,
+
+@media (max-width: 900px) {
+  .site-header {
+    height: 104px;
+    padding: 0 3.8rem;
+  }
+
+  .wordmark {
+    font-size: clamp(1.35rem, 5.8vw, 2.4rem);
+    white-space: normal;
+    max-width: 72vw;
+  }
+
+  .back-button { left: .65rem; }
+  .edit-toggle {
+    right: .65rem;
+    font-size: .8rem;
+    padding: .5rem;
+    min-width: 44px;
+  }
+
+  .home-grid,
+  .page,
+  body.internal-page .page {
+    height: calc(100vh - 104px);
+  }
+
+  .home-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .panel {
+    min-height: calc((100vh - 180px)/2);
+    font-size: clamp(2rem, 8vw, 3.4rem);
+  }
+
+  .connect-layout { grid-template-columns: 1fr; }
+  .event-grid { grid-template-columns: 1fr; }
+  .gallery-item, .gallery-item:nth-child(1), .gallery-item:nth-child(5) { grid-column: span 12; }
+}
+
+@media (max-width: 560px) {
+  .home-grid { grid-template-columns: 1fr; }
+  .panel { min-height: 34vh; }
+  .site-footer { align-items: stretch; flex-direction: column; }
+  .donate-button { width: 100%; }
+  .section-heading-row { align-items: start; flex-direction: column; }
+}
+
+
+body.internal-page .site-footer {
+  display: none;
+}
+
+body.internal-page main {
+  min-height: calc(100vh - 132px);
+}
+
+body.internal-page .page {
+  height: calc(100vh - 132px);
+}
+
 body:not(.internal-page) .site-footer {
   display: none;
 }
 
-/* Internal pages use the space beneath the desktop header */
-body.internal-page main {
-  min-height: calc(100svh - 132px);
-}
-
-body.internal-page .page {
-  height: calc(100svh - 132px);
-}
-
-/* Supporting form styles */
 .privacy-note {
   margin: .85rem 0 0;
   font-size: .88rem;
@@ -395,134 +445,68 @@ body.internal-page .page {
   opacity: .6;
   cursor: wait;
 }
-
-/* ==================================================
-   TABLETS AND SMALLER WINDOWS
-   Automatically changes the homepage to a 2 × 2 grid
-   ================================================== */
-
-@media (max-width: 900px) {
-  .site-header {
-    height: 76px;
-    padding: 0 3rem;
+@media (max-width: 768px) {
+  html,
+  body {
+    width: 100%;
+    overflow-x: hidden;
   }
 
-  .wordmark {
-    max-width: 78vw;
-    font-size: clamp(1.35rem, 5vw, 2.4rem);
-    white-space: nowrap;
+  body {
+    margin: 0;
   }
 
-  .back-button {
-    left: .65rem;
+  header {
+    padding: 28px 18px;
+    text-align: center;
   }
 
-  .edit-toggle {
-    right: .65rem;
-    min-width: 44px;
-    min-height: 44px;
-    padding: .5rem;
-    font-size: .8rem;
+  header h1,
+  header .site-title {
+    font-size: clamp(1.8rem, 8vw, 2.8rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
   }
 
   main,
-  body.internal-page main {
-    min-height: calc(100svh - 76px);
-  }
-
+  .grid,
   .home-grid,
-  .home-grid.active {
+  .panel-grid,
+  .sections-grid {
+    display: block;
     width: 100%;
-    height: calc(100svh - 76px);
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(2, minmax(0, 1fr));
   }
 
-  .panel {
+  section,
+  .panel,
+  .card,
+  .home-panel {
     width: 100%;
-    height: auto;
-    min-height: 0;
-    padding: 1rem;
-    font-size: clamp(1.7rem, 6vw, 3rem);
+    min-height: auto;
+    box-sizing: border-box;
+    padding: 70px 24px;
+  }
+
+  section h1,
+  section h2,
+  .panel h1,
+  .panel h2,
+  .card h1,
+  .card h2 {
+    font-size: clamp(2.4rem, 11vw, 4rem);
     line-height: 1.05;
+    margin: 0;
+    overflow-wrap: anywhere;
   }
 
-  .panel::after {
-    display: none;
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
 
-  .page,
-  body.internal-page .page {
-    height: calc(100svh - 76px);
-  }
-
-  .connect-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .event-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .gallery-item,
-  .gallery-item:nth-child(1),
-  .gallery-item:nth-child(5) {
-    grid-column: span 12;
-  }
-}
-
-/* ==================================================
-   PHONES
-   Automatically changes the homepage to four rows
-   ================================================== */
-
-@media (max-width: 560px) {
-  .site-header {
-    padding: 0 3rem;
-  }
-
-  .wordmark {
-    max-width: 76vw;
-    font-size: clamp(1.2rem, 5.8vw, 1.75rem);
-    white-space: nowrap;
-  }
-
-  .home-grid,
-  .home-grid.active {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(4, minmax(0, 1fr));
-  }
-
-  .panel {
-    min-width: 0;
-    min-height: 0;
-    padding: .75rem;
-    font-size: clamp(1.55rem, 7vw, 2.25rem);
-  }
-
-  .page-inner,
-  .connect-layout {
-    padding: 2rem 1.25rem;
-  }
-
-  .page h1 {
-    margin-bottom: 1.5rem;
-    font-size: clamp(2.4rem, 11vw, 3.6rem);
-    line-height: 1;
-  }
-
-  .editable-copy {
-    font-size: 1.1rem;
-    line-height: 1.5;
-  }
-
-  .contact-card {
-    padding: 1.25rem;
-  }
-
-  .section-heading-row {
-    align-items: flex-start;
-    flex-direction: column;
+  a,
+  button {
+    max-width: 100%;
   }
 }
