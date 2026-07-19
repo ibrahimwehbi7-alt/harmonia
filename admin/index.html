@@ -3,10 +3,1177 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="robots" content="noindex" />
-  <title>Harmonia Content Manager</title>
+  <title>Harmonia Admin</title>
+ <link rel="stylesheet" href="css/main.css">
 </head>
+
 <body>
-  <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        The Harmonia Project
+        <small>Administration</small>
+      </div>
+
+      <button class="nav-button active" data-page="dashboard">Dashboard</button>
+
+      <p class="nav-label">Website</p>
+      <button class="nav-button" data-page="homepage">Homepage</button>
+      <button class="nav-button" data-page="about">About</button>
+      <button class="nav-button" data-page="connect">Connect</button>
+
+     <p class="nav-label">Management</p>
+
+<button class="nav-button" data-page="projects">Projects</button>
+<button class="nav-button" data-page="events">Events</button>
+<button class="nav-button" data-page="gallery">Gallery</button>
+<button class="nav-button" data-page="partners">Partners</button>
+<button class="nav-button" data-page="messages">Messages</button>
+
+      <p class="nav-label">Organization</p>
+      <button class="nav-button" data-page="donations">Donations</button>
+      <button class="nav-button" data-page="analytics">Analytics</button>
+      <button class="nav-button" data-page="ai">Harmonia AI</button>
+
+      <div class="sidebar-footer">Harmonia Admin v2</div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Harmonia Admin</p>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+
+        <a
+          class="view-site"
+          href="https://theharmoniaproject.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View website
+        </a>
+      </header>
+
+ <section class="admin-page active" id="dashboard">
+  <div class="dashboard-hero">
+    <div>
+      <p class="eyebrow">Harmonia HQ</p>
+      <h2>Good afternoon, Ibrahim.</h2>
+      <p class="dashboard-intro">
+        Here is what needs your attention today.
+      </p>
+    </div>
+
+    <div class="dashboard-date" id="dashboardDate"></div>
+  </div>
+
+  <div class="dashboard-layout">
+    <div class="dashboard-main">
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">Priority</p>
+            <h3>Today's Focus</h3>
+          </div>
+
+          <button class="text-button">Manage tasks →</button>
+        </div>
+
+        <div class="focus-toolbar">
+  <button class="primary-button" id="addTaskButton">+ Add task</button>
+
+  <select id="taskFilter" aria-label="Filter tasks">
+    <option value="all">All tasks</option>
+    <option value="open">Open</option>
+    <option value="completed">Completed</option>
+    <option value="high">High priority</option>
+  </select>
+</div>
+
+<div class="focus-list" id="focusList"></div>
+
+<div class="task-empty-state" id="taskEmptyState" hidden>
+  <p>No tasks match this view.</p>
+</div>
+
+<div class="task-modal" id="taskModal" hidden>
+  <div class="task-modal-backdrop" data-close-task-modal></div>
+
+  <section
+    class="task-modal-panel"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="taskModalTitle"
+  >
+    <div class="task-modal-header">
+      <div>
+        <p class="panel-label">Planning</p>
+        <h3 id="taskModalTitle">Add Task</h3>
+      </div>
+
+      <button
+        class="task-modal-close"
+        type="button"
+        data-close-task-modal
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </div>
+
+    <div class="task-form-grid">
+      <label class="task-field task-field-wide">
+        <span>Task</span>
+        <input id="taskTitleInput" type="text" maxlength="120" />
+      </label>
+
+      <label class="task-field task-field-wide">
+        <span>Details</span>
+        <textarea id="taskDetailsInput" rows="3"></textarea>
+      </label>
+
+      <label class="task-field">
+        <span>Priority</span>
+        <select id="taskPriorityInput">
+          <option value="high">High</option>
+          <option value="medium" selected>Medium</option>
+          <option value="low">Low</option>
+        </select>
+      </label>
+
+      <label class="task-field">
+        <span>Due date</span>
+        <input id="taskDueDateInput" type="date" />
+      </label>
+    </div>
+
+    <div class="task-modal-actions">
+      <button
+        class="text-button"
+        type="button"
+        data-close-task-modal
+      >
+        Cancel
+      </button>
+
+      <button class="primary-button" type="button" id="saveTaskButton">
+        Save task
+      </button>
+    </div>
+  </section>
+</div>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">Schedule</p>
+            <h3>Upcoming Events</h3>
+          </div>
+
+          <button class="text-button page-link" data-page="events">
+            View all →
+          </button>
+        </div>
+
+        <div class="event-preview-list">
+          <article class="event-preview">
+            <div class="event-date-block">
+              <span>SEP</span>
+              <strong>08</strong>
+            </div>
+
+            <div>
+              <h4>Foundation Board Meeting</h4>
+              <p>Wojcik Conference Center · 7:30 AM</p>
+            </div>
+
+            <span class="status-badge published">Confirmed</span>
+          </article>
+
+          <article class="event-preview">
+            <div class="event-date-block">
+              <span>SEP</span>
+              <strong>09</strong>
+            </div>
+
+            <div>
+              <h4>Hullabaloo</h4>
+              <p>Harper College · 11:00 AM</p>
+            </div>
+
+            <span class="status-badge draft">Planning</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">History</p>
+            <h3>Recent Activity</h3>
+          </div>
+        </div>
+
+        <div class="activity-list">
+          <div class="activity-item">
+            <span class="activity-dot"></span>
+            <div>
+              <strong>Homepage content updated</strong>
+              <small>Today at 2:14 PM</small>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-dot"></span>
+            <div>
+              <strong>Gallery draft created</strong>
+              <small>Yesterday at 6:40 PM</small>
+            </div>
+          </div>
+
+          <div class="activity-item">
+            <span class="activity-dot"></span>
+            <div>
+              <strong>New partner record added</strong>
+              <small>July 16 at 11:02 AM</small>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="dashboard-side">
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">Create</p>
+            <h3>Quick Actions</h3>
+          </div>
+        </div>
+
+        <div class="quick-action-list">
+          <button class="quick-action page-link" data-page="events">
+            <span>+</span>
+            New Event
+          </button>
+
+          <button class="quick-action page-link" data-page="homepage">
+            <span>+</span>
+            Edit Homepage
+          </button>
+
+          <button class="quick-action page-link" data-page="gallery">
+            <span>+</span>
+            Upload Photos
+          </button>
+
+          <button class="quick-action page-link" data-page="ai">
+            <span>+</span>
+            Open Harmonia AI
+          </button>
+        </div>
+      </section>
+
+      <section class="dashboard-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="panel-label">Overview</p>
+            <h3>Organization Status</h3>
+          </div>
+        </div>
+
+        <div class="status-list">
+          <div>
+            <span>Upcoming events</span>
+            <strong>4</strong>
+          </div>
+
+          <div>
+            <span>Draft pages</span>
+            <strong>3</strong>
+          </div>
+
+          <div>
+            <span>Active partners</span>
+            <strong>8</strong>
+          </div>
+
+          <div>
+            <span>Unread messages</span>
+            <strong>5</strong>
+          </div>
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>
+
+      <section class="admin-page" id="homepage">
+        <div class="placeholder-card">
+          <h2>Homepage Editor</h2>
+          <p>The homepage editor will be built here.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="about">
+        <div class="placeholder-card">
+          <h2>About Editor</h2>
+          <p>The About page editor will be built here.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="connect">
+        <div class="placeholder-card">
+          <h2>Connect Editor</h2>
+          <p>The Connect page editor will be built here.</p>
+        </div>
+      </section>
+
+   <section class="admin-page" id="events">
+  <div class="events-page">
+    <div class="events-page-header">
+      <div>
+        <p class="eyebrow">Planning</p>
+        <h2>Events Manager</h2>
+        <p class="events-page-intro">
+          Create, organize, and track Harmonia events, meetings, and deadlines.
+        </p>
+      </div>
+
+      <button class="primary-button" id="newEventButton">
+        + New event
+      </button>
+    </div>
+
+    <div class="events-toolbar">
+      <div class="events-search">
+        <label for="eventSearchInput">Search events</label>
+        <input
+          id="eventSearchInput"
+          type="search"
+          placeholder="Search by title, location, or description"
+        />
+      </div>
+
+      <div class="events-filter">
+        <label for="eventStatusFilter">Status</label>
+        <select id="eventStatusFilter">
+          <option value="all">All statuses</option>
+          <option value="idea">Idea</option>
+          <option value="planning">Planning</option>
+          <option value="tentative">Tentative</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="events-filter">
+        <label for="eventTypeFilter">Type</label>
+        <select id="eventTypeFilter">
+          <option value="all">All types</option>
+          <option value="meeting">Meeting</option>
+          <option value="public-event">Public Event</option>
+          <option value="speaking-engagement">Speaking Engagement</option>
+          <option value="deadline">Deadline</option>
+          <option value="internal-planning">Internal Planning</option>
+          <option value="community-event">Community Event</option>
+          <option value="fundraiser">Fundraiser</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="events-summary">
+      <div class="events-summary-card">
+        <span>Total events</span>
+        <strong id="eventTotalCount">0</strong>
+      </div>
+
+      <div class="events-summary-card">
+        <span>Upcoming</span>
+        <strong id="eventUpcomingCount">0</strong>
+      </div>
+
+      <div class="events-summary-card">
+        <span>Confirmed</span>
+        <strong id="eventConfirmedCount">0</strong>
+      </div>
+
+      <div class="events-summary-card">
+        <span>Planning</span>
+        <strong id="eventPlanningCount">0</strong>
+      </div>
+    </div>
+
+    <div class="events-list" id="eventsList"></div>
+
+    <div class="events-empty-state" id="eventsEmptyState" hidden>
+      <h3>No events found</h3>
+      <p>Create a new event or adjust your filters.</p>
+    </div>
+  </div>
+
+  <div class="event-modal" id="eventModal" hidden>
+    <div class="event-modal-backdrop" data-close-event-modal></div>
+
+    <section
+      class="event-modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="eventModalTitle"
+    >
+      <div class="event-modal-header">
+        <div>
+          <p class="panel-label">Schedule</p>
+          <h3 id="eventModalTitle">New Event</h3>
+        </div>
+
+        <button
+          class="event-modal-close"
+          type="button"
+          data-close-event-modal
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="event-form-grid">
+        <label class="event-field event-field-wide">
+          <span>Event title</span>
+          <input
+            id="eventTitleInput"
+            type="text"
+            maxlength="140"
+          />
+        </label>
+
+        <label class="event-field">
+          <span>Event type</span>
+          <select id="eventTypeInput">
+            <option value="meeting">Meeting</option>
+            <option value="public-event">Public Event</option>
+            <option value="speaking-engagement">
+              Speaking Engagement
+            </option>
+            <option value="deadline">Deadline</option>
+            <option value="internal-planning">
+              Internal Planning
+            </option>
+            <option value="community-event">
+              Community Event
+            </option>
+            <option value="fundraiser">Fundraiser</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+
+        <label class="event-field">
+          <span>Status</span>
+          <select id="eventStatusInput">
+            <option value="idea">Idea</option>
+            <option value="planning" selected>Planning</option>
+            <option value="tentative">Tentative</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+
+        <label class="event-field">
+          <span>Start date</span>
+          <input id="eventStartDateInput" type="date" />
+        </label>
+
+        <label class="event-field">
+          <span>End date</span>
+          <input id="eventEndDateInput" type="date" />
+        </label>
+
+        <label class="event-field">
+          <span>Start time</span>
+          <input id="eventStartTimeInput" type="time" />
+        </label>
+
+        <label class="event-field">
+          <span>End time</span>
+          <input id="eventEndTimeInput" type="time" />
+        </label>
+
+        <label class="event-field event-field-wide">
+          <span>Location</span>
+          <input
+            id="eventLocationInput"
+            type="text"
+            maxlength="180"
+          />
+        </label>
+
+        <label class="event-field event-field-wide">
+          <span>Description</span>
+          <textarea
+            id="eventDescriptionInput"
+            rows="5"
+          ></textarea>
+        </label>
+
+        <label class="event-checkbox-field event-field-wide">
+          <input id="eventPublicInput" type="checkbox" />
+          <span>Show this event on the public website later</span>
+        </label>
+      </div>
+
+      <div class="event-modal-actions">
+        <button
+          class="text-button"
+          type="button"
+          data-close-event-modal
+        >
+          Cancel
+        </button>
+
+        <button
+          class="primary-button"
+          type="button"
+          id="saveEventButton"
+        >
+          Save event
+        </button>
+      </div>
+    </section>
+  </div>
+</section>
+
+      <section class="admin-page" id="gallery">
+        <div class="placeholder-card">
+          <h2>Gallery Manager</h2>
+          <p>Photo management will be built here.</p>
+        </div>
+      </section>
+<section class="admin-page" id="projects">
+
+  <div class="projects-page">
+
+    <div class="projects-page-header">
+
+      <div>
+        <p class="eyebrow">Organization</p>
+
+        <h2>Projects</h2>
+
+        <p class="projects-page-intro">
+          Organize every initiative, campaign, event, and long-term goal in one place.
+        </p>
+      </div>
+
+      <button
+        class="primary-button"
+        id="newProjectButton">
+        + New Project
+      </button>
+
+    </div>
+
+    <div class="projects-toolbar">
+
+      <div class="projects-search">
+
+        <label for="projectSearchInput">
+          Search Projects
+        </label>
+
+        <input
+          id="projectSearchInput"
+          type="search"
+          placeholder="Search projects..." />
+
+      </div>
+
+      <div class="projects-filter">
+
+        <label for="projectStatusFilter">
+          Status
+        </label>
+
+        <select id="projectStatusFilter">
+
+          <option value="all">All</option>
+
+          <option value="planning">Planning</option>
+
+          <option value="active">Active</option>
+
+          <option value="completed">Completed</option>
+
+          <option value="paused">Paused</option>
+
+          <option value="cancelled">Cancelled</option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="projects-summary">
+
+      <div class="projects-summary-card">
+        <span>Total Projects</span>
+        <strong id="projectTotalCount">0</strong>
+      </div>
+
+      <div class="projects-summary-card">
+        <span>Active</span>
+        <strong id="projectActiveCount">0</strong>
+      </div>
+
+      <div class="projects-summary-card">
+        <span>Completed</span>
+        <strong id="projectCompletedCount">0</strong>
+      </div>
+
+    </div>
+
+    <div
+      class="projects-list"
+      id="projectsList">
+    </div>
+
+    <div
+      class="projects-empty-state"
+      id="projectsEmptyState"
+      hidden>
+
+      <h3>No Projects Yet</h3>
+
+      <p>
+        Start by creating your first project.
+      </p>
+
+    </div>
+
+    </div>
+
+  <div class="project-modal" id="projectModal" hidden>
+    <div
+      class="project-modal-backdrop"
+      data-close-project-modal
+    ></div>
+
+    <section
+      class="project-modal-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="projectModalTitle"
+    >
+      <div class="project-modal-header">
+        <div>
+          <p class="panel-label">Organization</p>
+          <h3 id="projectModalTitle">New Project</h3>
+        </div>
+
+        <button
+          class="project-modal-close"
+          type="button"
+          data-close-project-modal
+          aria-label="Close"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="project-form-grid">
+        <label class="project-field project-field-wide">
+          <span>Project title</span>
+
+          <input
+            id="projectTitleInput"
+            type="text"
+            maxlength="140"
+          />
+        </label>
+
+        <label class="project-field">
+          <span>Status</span>
+
+          <select id="projectStatusInput">
+            <option value="planning">Planning</option>
+            <option value="active">Active</option>
+            <option value="completed">Completed</option>
+            <option value="paused">Paused</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+
+        <label class="project-field">
+          <span>Progress</span>
+
+          <input
+            id="projectProgressInput"
+            type="number"
+            min="0"
+            max="100"
+            value="0"
+          />
+        </label>
+
+        <label class="project-field">
+          <span>Accent color</span>
+
+          <input
+            id="projectColorInput"
+            type="color"
+            value="#1e4d8c"
+          />
+        </label>
+
+        <label class="project-field project-field-wide">
+          <span>Description</span>
+
+          <textarea
+            id="projectDescriptionInput"
+            rows="5"
+          ></textarea>
+        </label>
+      </div>
+
+      <div class="project-modal-actions">
+        <button
+          class="text-button"
+          type="button"
+          data-close-project-modal
+        >
+          Cancel
+        </button>
+
+        <button
+          class="primary-button"
+          type="button"
+          id="saveProjectButton"
+        >
+          Save project
+        </button>
+      </div>
+    </section>
+  </div>
+
+</section>
+<section class="admin-page" id="project-workspace">
+  <div class="project-workspace-page">
+
+    <button
+      class="text-button project-workspace-back"
+      type="button"
+      id="backToProjectsButton"
+    >
+      ← Back to Projects
+    </button>
+
+    <div class="project-workspace-header">
+      <div class="project-workspace-heading">
+        <div
+          class="project-workspace-color"
+          id="workspaceProjectColor"
+        ></div>
+
+        <div>
+          <p class="eyebrow">Project Workspace</p>
+
+          <h2 id="workspaceProjectTitle">
+            Project
+          </h2>
+
+          <p
+            class="project-workspace-description"
+            id="workspaceProjectDescription"
+          >
+            Project information will appear here.
+          </p>
+        </div>
+      </div>
+
+      <button
+        class="primary-button"
+        type="button"
+        id="editWorkspaceProjectButton"
+      >
+        Edit Project
+      </button>
+    </div>
+
+    <div class="project-workspace-status-row">
+      <div class="project-workspace-status">
+        <span>Status</span>
+
+        <strong id="workspaceProjectStatus">
+          Planning
+        </strong>
+      </div>
+
+      <div class="project-workspace-progress-area">
+        <div class="project-workspace-progress-heading">
+          <span>Progress</span>
+
+          <strong id="workspaceProjectProgressText">
+            0%
+          </strong>
+        </div>
+
+        <div class="project-workspace-progress-track">
+          <div
+            class="project-workspace-progress-fill"
+            id="workspaceProjectProgressFill"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <nav
+      class="project-workspace-tabs"
+      aria-label="Project workspace sections"
+    >
+      <button
+        class="project-workspace-tab active"
+        type="button"
+        data-project-tab="overview"
+      >
+        Overview
+      </button>
+
+      <button
+        class="project-workspace-tab"
+        type="button"
+        data-project-tab="tasks"
+      >
+        Tasks
+      </button>
+
+      <button
+        class="project-workspace-tab"
+        type="button"
+        data-project-tab="events"
+      >
+        Events
+      </button>
+
+      <button
+        class="project-workspace-tab"
+        type="button"
+        data-project-tab="notes"
+      >
+        Notes
+      </button>
+
+      <button
+        class="project-workspace-tab"
+        type="button"
+        data-project-tab="files"
+      >
+        Files
+      </button>
+
+      <button
+        class="project-workspace-tab"
+        type="button"
+        data-project-tab="activity"
+      >
+        Activity
+      </button>
+    </nav>
+
+    <div class="project-workspace-content">
+
+      <section
+        class="project-workspace-panel active"
+        data-project-panel="overview"
+      >
+        <div class="project-overview-grid">
+
+          <article class="dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">Work</p>
+                <h3>Tasks</h3>
+              </div>
+
+              <strong id="workspaceTaskCount">
+                0
+              </strong>
+            </div>
+
+            <p>
+              Tasks connected to this project will appear here.
+            </p>
+          </article>
+
+          <article class="dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">Schedule</p>
+                <h3>Events</h3>
+              </div>
+
+              <strong id="workspaceEventCount">
+                0
+              </strong>
+            </div>
+
+            <p>
+              Events connected to this project will appear here.
+            </p>
+          </article>
+
+          <article class="dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">Knowledge</p>
+                <h3>Notes</h3>
+              </div>
+
+              <strong id="workspaceNoteCount">
+                0
+              </strong>
+            </div>
+
+            <p>
+              Notes and planning documents will appear here.
+            </p>
+          </article>
+
+          <article class="dashboard-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="panel-label">Resources</p>
+                <h3>Files</h3>
+              </div>
+
+              <strong id="workspaceFileCount">
+                0
+              </strong>
+            </div>
+
+            <p>
+              Files connected to this project will appear here.
+            </p>
+          </article>
+
+        </div>
+
+        <section class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">History</p>
+              <h3>Recent Project Activity</h3>
+            </div>
+          </div>
+
+          <div
+            class="project-workspace-activity"
+            id="workspaceRecentActivity"
+          >
+            <p>
+              No project activity yet.
+            </p>
+          </div>
+        </section>
+      </section>
+
+      <section
+        class="project-workspace-panel"
+        data-project-panel="tasks"
+        hidden
+      >
+        <div class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">Work</p>
+              <h3>Project Tasks</h3>
+            </div>
+
+            <button
+              class="primary-button"
+              type="button"
+              id="addWorkspaceTaskButton"
+            >
+              + Add Task
+            </button>
+          </div>
+
+          <div id="workspaceTasksList">
+            <p>
+              Project-specific tasks will be connected next.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="project-workspace-panel"
+        data-project-panel="events"
+        hidden
+      >
+        <div class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">Schedule</p>
+              <h3>Project Events</h3>
+            </div>
+
+            <button
+              class="primary-button"
+              type="button"
+              id="addWorkspaceEventButton"
+            >
+              + Add Event
+            </button>
+          </div>
+
+          <div id="workspaceEventsList">
+            <p>
+              Project-specific events will be connected next.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="project-workspace-panel"
+        data-project-panel="notes"
+        hidden
+      >
+        <div class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">Knowledge</p>
+              <h3>Project Notes</h3>
+            </div>
+
+            <button
+              class="primary-button"
+              type="button"
+              id="addWorkspaceNoteButton"
+            >
+              + Add Note
+            </button>
+          </div>
+
+          <div id="workspaceNotesList">
+            <p>
+              The Notes module will be built here.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="project-workspace-panel"
+        data-project-panel="files"
+        hidden
+      >
+        <div class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">Resources</p>
+              <h3>Project Files</h3>
+            </div>
+
+            <button
+              class="primary-button"
+              type="button"
+              id="addWorkspaceFileButton"
+            >
+              + Add File
+            </button>
+          </div>
+
+          <div id="workspaceFilesList">
+            <p>
+              The Files module will be built here.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="project-workspace-panel"
+        data-project-panel="activity"
+        hidden
+      >
+        <div class="dashboard-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-label">History</p>
+              <h3>Project Activity</h3>
+            </div>
+          </div>
+
+          <div id="workspaceActivityList">
+            <p>
+              Project activity will appear here.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+      <section class="admin-page" id="partners">
+        <div class="placeholder-card">
+          <h2>Partners</h2>
+          <p>Manage community and institutional partners.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="messages">
+        <div class="placeholder-card">
+          <h2>Messages</h2>
+          <p>Contact inquiries will appear here later.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="donations">
+        <div class="placeholder-card">
+          <h2>Donations</h2>
+          <p>Donation information will appear here later.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="analytics">
+        <div class="placeholder-card">
+          <h2>Analytics</h2>
+          <p>Website and engagement metrics will appear here.</p>
+        </div>
+      </section>
+
+      <section class="admin-page" id="ai">
+        <div class="placeholder-card">
+          <h2>Harmonia AI</h2>
+          <p>AI-assisted writing and planning tools will live here.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+<script src="js/ui.js"></script>
+
+<script src="js/dashboard/taskManager.js"></script>
+<script src="js/dashboard/taskModal.js"></script>
+<script src="js/dashboard/dashboard.js"></script>
+
+<script src="js/events/eventManager.js"></script>
+<script src="js/events/eventModal.js"></script>
+<script src="js/events/eventsPage.js"></script>
+
+<script src="js/projects/projectManager.js"></script>
+<script src="js/projects/projectModal.js"></script>
+<script src="js/projects/projectsPage.js"></script>
+<script src="js/projects/projectWorkspace.js"></script>
+
+<script src="js/router.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>
