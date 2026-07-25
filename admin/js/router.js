@@ -3,6 +3,8 @@ const pageTitles = {
   homepage: "Homepage",
   about: "About",
   connect: "Connect",
+  projects: "Projects",
+  work: "Work",
   events: "Events",
   gallery: "Gallery",
   partners: "Partners",
@@ -25,32 +27,49 @@ function openAdminPage(pageId) {
   });
 
   document.querySelectorAll(".nav-button").forEach((button) => {
-    button.classList.toggle("active", button.dataset.page === pageId);
+    button.classList.toggle(
+      "active",
+      button.dataset.page === pageId
+    );
   });
 
   const pageTitle = document.getElementById("pageTitle");
 
   if (pageTitle) {
-    pageTitle.textContent = pageTitles[pageId] || "Harmonia HQ";
+    pageTitle.textContent =
+      pageTitles[pageId] || "Harmonia HQ";
+  }
+
+  // Render the Work page whenever it becomes active.
+  if (
+    pageId === "work" &&
+    typeof window.renderWorkPage === "function"
+  ) {
+    window.renderWorkPage();
   }
 
   window.location.hash = pageId;
 }
 
 function initializeRouter() {
-  document.querySelectorAll("[data-page]").forEach((element) => {
-    element.addEventListener("click", () => {
-      openAdminPage(element.dataset.page);
+  document.querySelectorAll("[data-page]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openAdminPage(button.dataset.page);
     });
   });
 
-  const requestedPage = window.location.hash.replace("#", "");
-  const initialPage = document.getElementById(requestedPage)
-    ? requestedPage
-    : "dashboard";
+  const requestedPage =
+    window.location.hash.replace("#", "");
+
+  const initialPage =
+    document.getElementById(requestedPage)
+      ? requestedPage
+      : "dashboard";
 
   openAdminPage(initialPage);
 }
 
 window.openAdminPage = openAdminPage;
 window.initializeRouter = initializeRouter;
+
+console.log("✅ Router Loaded");

@@ -88,17 +88,19 @@ window.HarmoniaProjects = {
 
     },
 
-    getAll() {
+  getAll() {
+    return [...projects];
+},
 
-        return [...projects];
+getById(id) {
+    return projects.find(
+        project => project.id === id
+    ) || null;
+},
 
-    },
-
-    save() {
-
-        saveProjects();
-
-    },
+save() {
+    saveProjects();
+},
 
     add(project) {
 
