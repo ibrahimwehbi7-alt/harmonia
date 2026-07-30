@@ -1,161 +1,111 @@
-const PROJECT_STORAGE_KEY = "harmonia.projects";
+function showProjectWorkspacePage() {
+    console.log("Showing workspace page");
 
-function createProjectId() {
-    return (
-        "project_" +
-        Date.now() +
-        "_" +
-        Math.random().toString(36).slice(2, 8)
-    );
-}
+    const workspacePage =
+        document.getElementById("project-workspace");
 
-const defaultProjects = [
-    {
-        id: createProjectId(),
-
-        title: "Fall 2026 Student Government",
-
-        description:
-            "Plan and execute the Student Government academic year.",
-
-        status: "active",
-
-        progress: 25,
-
-        color: "#1E4D8C",
-
-        createdAt: new Date().toISOString(),
-
-        updatedAt: new Date().toISOString()
-    },
-
-    {
-        id: createProjectId(),
-
-        title: "The Harmonia Project",
-
-        description:
-            "Develop Harmonia into a sustainable nonprofit organization.",
-
-        status: "planning",
-
-        progress: 12,
-
-        color: "#3D6FA8",
-
-        createdAt: new Date().toISOString(),
-
-        updatedAt: new Date().toISOString()
-    }
-];
-
-let projects = [];
-
-function saveProjects() {
-    localStorage.setItem(
-        PROJECT_STORAGE_KEY,
-        JSON.stringify(projects)
-    );
-}
-
-window.HarmoniaProjects = {
-
-    load() {
-
-        const saved =
-            localStorage.getItem(PROJECT_STORAGE_KEY);
-
-        if (saved) {
-
-            try {
-
-                projects = JSON.parse(saved);
-
-            } catch {
-
-                projects = [...defaultProjects];
-
-                saveProjects();
-            }
-
-        } else {
-
-            projects = [...defaultProjects];
-
-            saveProjects();
-
-        }
-
-    },
-
-  getAll() {
-    return [...projects];
-},
-
-getById(id) {
-    return projects.find(
-        project => project.id === id
-    ) || null;
-},
-
-save() {
-    saveProjects();
-},
-
-    add(project) {
-
-        const item = {
-
-            id: createProjectId(),
-
-            progress: 0,
-
-            color: "#1E4D8C",
-
-            createdAt: new Date().toISOString(),
-
-            updatedAt: new Date().toISOString(),
-
-            ...project
-
-        };
-
-        projects.push(item);
-
-        saveProjects();
-
-        return item;
-
-    },
-
-    update(id, updates) {
-
-        const index =
-            projects.findIndex(project => project.id === id);
-
-        if (index === -1) return;
-
-        projects[index] = {
-
-            ...projects[index],
-
-            ...updates,
-
-            updatedAt: new Date().toISOString()
-
-        };
-
-        saveProjects();
-
-    },
-
-    delete(id) {
-
-        projects =
-            projects.filter(project => project.id !== id);
-
-        saveProjects();
-
+    if (!workspacePage) {
+        console.error(
+            "The #project-workspace section was not found."
+        );
+        return;
     }
 
-};
+    // Hide every admin page.
+    document
+        .querySelectorAll(".admin-page")
+        .forEach(page => {
+            page.classList.remove("active");
+            page.hidden = true;
+        });
+
+    // Explicitly show the project workspace.
+    workspacePage.hidden = false;
+    workspacePage.removeAttribute("hidden");
+    workspacePage.removeAttribute("aria-hidden");
+    workspacePage.classList.add("active");
+    workspacePage.style.display = "block";
+    workspacePage.style.visibility = "visible";
+    workspacePage.style.opacity = "1";
+
+    // Make sure the workspace's inner container is visible.
+    const workspaceContent =
+        workspacePage.querySelector(
+            ".project-workspace-page"
+        );
+
+    if (workspaceContent) {
+        workspaceContent.hidden = false;
+        workspaceContent.removeAttribute("hidden");
+        workspaceContent.style.display = "";
+        workspaceContent.style.visibility = "visible";
+        workspaceContent.style.opacity = "1";
+    }
+
+    // Support either panel attribute naming system.
+    const panels =
+        workspacePage.querySelectorAll(
+            "[data-project-panel], [data-workspace-panel]"
+        );
+
+    let activePanel =
+        workspacePage.querySelector(
+            "[data-project-panel].active, " +
+            "[data-workspace-panel].active"
+        );
+
+    // If every panel is hidden, open the overview panel.
+    if (!activePanel && panels.length > 0) {
+        activePanel =
+            workspacePage.querySelector(
+                '[data-project-panel="overview"], ' +
+                '[data-workspace-panel="overview"]'
+            ) || panels[0];
+
+        activePanel.classList.add("active");
+    }
+
+    panels.forEach(panel => {
+        const shouldShow =
+            panel === activePanel ||
+            panel.classList.contains("active");
+
+        panel.hidden = !shouldShow;
+        panel.style.display =
+            shouldShow ? "" : "none";
+    });
+
+    // Activate the overview tab when necessary.
+    const tabs =
+        workspacePage.querySelectorAll(
+            "[data-project-tab], [data-workspace-tab]"
+        );
+
+    if (
+        tabs.length > 0 &&
+        !workspacePage.querySelector(
+            "[data-project-tab].active, " +
+            "[data-workspace-tab].active"
+        )
+    ) {
+        tabs[0].classList.add("active");
+    }
+
+    const pageTitle =
+        document.getElementById("pageTitle");
+
+    if (pageTitle) {
+        pageTitle.textContent =
+            currentWorkspaceProject?.title ||
+            currentWorkspaceProject?.name ||
+            "Project Workspace";
+    }
+
+    if (window.location.hash !== "#project-workspace") {
+        window.history.replaceState(
+            null,
+            "",
+            "#project-workspace"
+        );
+    }
+}

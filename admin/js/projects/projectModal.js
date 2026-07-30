@@ -97,7 +97,7 @@ function saveProjectFromModal() {
     if (editingProjectId) {
         window.HarmoniaProjects.update(editingProjectId, projectData);
     } else {
-        window.HarmoniaProjects.add(projectData);
+        window.HarmoniaProjects.create(projectData);
     }
 
     closeProjectModal();
