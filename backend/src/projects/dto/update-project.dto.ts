@@ -34,7 +34,4 @@ export class UpdateProjectDto {
   @IsDateString()
   endDate?: string;
 
-  @IsOptional()
-  @IsString()
-  ownerId?: string;
 }

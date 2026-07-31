@@ -6,41 +6,69 @@ import {
   Param,
   Patch,
   Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { Project } from '@prisma/client';
+import { UserRole } from '@prisma/client';
+
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { ProjectsService } from './projects.service';
 
+type AuthenticatedRequest = {
+  user: {
+    userId: string;
+    email: string;
+    role: UserRole;
+  };
+};
+
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projectsService: ProjectsService) {}
+  constructor(
+    private readonly projectsService: ProjectsService,
+  ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  create(@Body() dto: CreateProjectDto): Promise<Project> {
-    return this.projectsService.create(dto);
+  create(
+    @Body() dto: CreateProjectDto,
+    @Request() request: AuthenticatedRequest,
+  ) {
+    return this.projectsService.create(dto, request.user);
   }
 
   @Get()
-  findAll(): Promise<Project[]> {
+  findAll() {
     return this.projectsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Project> {
+  findOne(@Param('id') id: string) {
     return this.projectsService.findOne(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
     @Body() dto: UpdateProjectDto,
-  ): Promise<Project> {
-    return this.projectsService.update(id, dto);
+    @Request() request: AuthenticatedRequest,
+  ) {
+    return this.projectsService.update(
+      id,
+      dto,
+      request.user,
+    );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<Project> {
-    return this.projectsService.remove(id);
+  remove(
+    @Param('id') id: string,
+    @Request() request: AuthenticatedRequest,
+  ) {
+    return this.projectsService.remove(id, request.user);
   }
 }
