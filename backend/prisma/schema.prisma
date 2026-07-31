@@ -56,9 +56,11 @@ model User {
   projects    Project[]
   memberships OrganizationMember[]
 
-  assignedTasks Task[]        @relation("AssignedTasks")
-  createdTasks  Task[]        @relation("CreatedTasks")
-  taskComments  TaskComment[]
+  assignedTasks Task[] @relation("AssignedTasks")
+  createdTasks  Task[] @relation("CreatedTasks")
+
+  taskComments TaskComment[]
+  attachments  Attachment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,23 +138,45 @@ model Task {
 
   comments TaskComment[]
 
+  attachments Attachment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model TaskComment {
-  id      String @id @default(cuid())
+  id String @id @default(cuid())
+
   content String
 
   taskId String
   task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
   authorId String
-  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author   User   @relation(fields: [authorId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
 
-  @@index([taskId])
-  @@index([authorId])
+model Attachment {
+  id String @id @default(cuid())
+
+  filename String
+
+  originalName String
+
+  mimeType String
+
+  size Int
+
+  url String
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
 }

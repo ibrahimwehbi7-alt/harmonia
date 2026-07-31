@@ -1,21 +1,18 @@
-import { ProjectStatus } from '@prisma/client';
 import {
   IsDateString,
   IsEnum,
   IsOptional,
   IsString,
-  MinLength,
 } from 'class-validator';
+import { ProjectStatus } from '@prisma/client';
 
 export class UpdateProjectDto {
   @IsOptional()
   @IsString()
-  @MinLength(1)
   name?: string;
 
   @IsOptional()
   @IsString()
-  @MinLength(1)
   slug?: string;
 
   @IsOptional()
@@ -34,4 +31,7 @@ export class UpdateProjectDto {
   @IsDateString()
   endDate?: string;
 
+  @IsOptional()
+  @IsString()
+  organizationId?: string;
 }

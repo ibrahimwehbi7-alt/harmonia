@@ -3,7 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Project, UserRole } from '@prisma/client';
+import {
+  OrganizationRole,
+  Project,
+  UserRole,
+} from '@prisma/client';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjectDto } from './dto/create-project.dto';
@@ -19,22 +23,40 @@ type AuthenticatedUser = {
 export class ProjectsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  create(
+  async create(
     dto: CreateProjectDto,
     user: AuthenticatedUser,
   ): Promise<Project> {
+    if (dto.organizationId) {
+      await this.assertOrganizationMember(
+        dto.organizationId,
+        user,
+      );
+    }
+
     return this.prisma.project.create({
       data: {
-        ...dto,
-        startDate: dto.startDate ? new Date(dto.startDate) : undefined,
-        endDate: dto.endDate ? new Date(dto.endDate) : undefined,
+        name: dto.name,
+        slug: dto.slug,
+        description: dto.description,
+        status: dto.status,
+        startDate: dto.startDate
+          ? new Date(dto.startDate)
+          : undefined,
+        endDate: dto.endDate
+          ? new Date(dto.endDate)
+          : undefined,
         ownerId: user.userId,
+        organizationId: dto.organizationId,
       },
     });
   }
 
   findAll(): Promise<Project[]> {
     return this.prisma.project.findMany({
+      include: {
+        organization: true,
+      },
       orderBy: {
         createdAt: 'desc',
       },
@@ -44,6 +66,9 @@ export class ProjectsService {
   async findOne(id: string): Promise<Project> {
     const project = await this.prisma.project.findUnique({
       where: { id },
+      include: {
+        organization: true,
+      },
     });
 
     if (!project) {
@@ -60,12 +85,25 @@ export class ProjectsService {
   ): Promise<Project> {
     const project = await this.findOne(id);
 
-    this.assertCanManage(project, user);
+    await this.assertCanManage(project, user);
+
+    if (
+      dto.organizationId !== undefined &&
+      dto.organizationId !== project.organizationId
+    ) {
+      await this.assertOrganizationMember(
+        dto.organizationId,
+        user,
+      );
+    }
 
     return this.prisma.project.update({
       where: { id },
       data: {
-        ...dto,
+        name: dto.name,
+        slug: dto.slug,
+        description: dto.description,
+        status: dto.status,
         startDate:
           dto.startDate === undefined
             ? undefined
@@ -74,6 +112,7 @@ export class ProjectsService {
           dto.endDate === undefined
             ? undefined
             : new Date(dto.endDate),
+        organizationId: dto.organizationId,
       },
     });
   }
@@ -84,23 +123,98 @@ export class ProjectsService {
   ): Promise<Project> {
     const project = await this.findOne(id);
 
-    this.assertCanManage(project, user);
+    await this.assertCanManage(project, user);
 
     return this.prisma.project.delete({
       where: { id },
     });
   }
 
-  private assertCanManage(
+  private async assertCanManage(
     project: Project,
     user: AuthenticatedUser,
-  ): void {
-    const isOwner = project.ownerId === user.userId;
-    const isAdmin = user.role === UserRole.ADMIN;
+  ): Promise<void> {
+    if (
+      user.role === UserRole.ADMIN ||
+      user.role === UserRole.SUPER_ADMIN
+    ) {
+      return;
+    }
 
-    if (!isOwner && !isAdmin) {
+    const isPersonalOwner =
+      project.ownerId === user.userId;
+
+    if (!project.organizationId) {
+      if (!isPersonalOwner) {
+        throw new ForbiddenException(
+          'You do not have permission to manage this project',
+        );
+      }
+
+      return;
+    }
+
+    const membership =
+      await this.prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: user.userId,
+            organizationId: project.organizationId,
+          },
+        },
+      });
+
+    const canManageOrganizationProject =
+      membership?.role === OrganizationRole.OWNER ||
+      membership?.role === OrganizationRole.ADMIN;
+
+    if (
+      !isPersonalOwner &&
+      !canManageOrganizationProject
+    ) {
       throw new ForbiddenException(
         'You do not have permission to manage this project',
+      );
+    }
+  }
+
+  private async assertOrganizationMember(
+    organizationId: string,
+    user: AuthenticatedUser,
+  ): Promise<void> {
+    const organization =
+      await this.prisma.organization.findUnique({
+        where: {
+          id: organizationId,
+        },
+      });
+
+    if (!organization) {
+      throw new NotFoundException(
+        'Organization not found',
+      );
+    }
+
+    if (
+      user.role === UserRole.ADMIN ||
+      user.role === UserRole.SUPER_ADMIN
+    ) {
+      return;
+    }
+
+    const membership =
+      await this.prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: user.userId,
+            organizationId,
+          },
+        },
+      });
+
+    if (!membership) {
+      throw new ForbiddenException(
+        'You are not a member of this organization',
       );
     }
   }
