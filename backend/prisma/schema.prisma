@@ -22,6 +22,13 @@ enum UserRole {
   VIEWER
 }
 
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MODERATOR
+  MEMBER
+}
+
 model User {
   id        String @id @default(cuid())
   email     String @unique
@@ -31,10 +38,39 @@ model User {
 
   role UserRole @default(VIEWER)
 
+  projects    Project[]
+  memberships OrganizationMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Organization {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+
+  members  OrganizationMember[]
   projects Project[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model OrganizationMember {
+  id             String @id @default(cuid())
+  userId         String
+  organizationId String
+
+  role OrganizationRole @default(MEMBER)
+
+  user         User         @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, organizationId])
 }
 
 model Project {
@@ -49,6 +85,9 @@ model Project {
 
   ownerId String?
   owner   User?   @relation(fields: [ownerId], references: [id])
+
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
