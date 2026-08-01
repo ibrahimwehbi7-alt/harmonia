@@ -1,30 +1,9 @@
-import 'dotenv/config';
-import 'reflect-metadata';
-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { mkdir } from 'node:fs/promises';
-import pino from 'pino-http';
-
 import { AppModule } from './app.module';
-import { AllExceptionsFilter } from './common/all-exceptions.filter';
 
 async function bootstrap(): Promise<void> {
-  await mkdir('uploads', {
-    recursive: true,
-  });
-
-  const app = await NestFactory.create(AppModule, {
-    logger: false,
-  });
-
-  app.use(
-    pino({
-      level: process.env.LOG_LEVEL ?? 'info',
-    }),
-  );
-
-  app.useGlobalFilters(new AllExceptionsFilter());
+  const app = await NestFactory.create(AppModule);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -34,75 +13,93 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-const defaultOrigins = [
-  'http://localhost:8000',
-  'http://127.0.0.1:8000',
-  'http://localhost:3000',
-  'http://localhost:5173',
-];
+  const defaultOrigins = [
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://theharmoniaproject.org',
+    'https://www.theharmoniaproject.org',
+  ];
 
-const environmentOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN
-      .split(',')
-      .map((origin) => origin.trim())
-      .filter(Boolean)
-  : [];
+  const environmentOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN
+        .split(',')
+        .map((origin: string) => origin.trim())
+        .filter(Boolean)
+    : [];
 
-// Allow both local development and production domains.
-const defaultOrigins = [
-  "http://localhost:8000",
-  "http://127.0.0.1:8000",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "https://theharmoniaproject.org",
-  "https://www.theharmoniaproject.org",
-];
+  const allowedOrigins = Array.from(
+    new Set([
+      ...defaultOrigins,
+      ...environmentOrigins,
+    ]),
+  );
 
-const environmentOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN
-      .split(",")
-      .map(origin => origin.trim())
-      .filter(Boolean)
-  : [];
+  app.enableCors({
+    origin: (
+      origin: string | undefined,
+      callback: (
+        error: Error | null,
+        allowed?: boolean,
+      ) => void,
+    ) => {
+      // Allow curl, Postman, server-to-server requests,
+      // and other requests without an Origin header.
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
 
-const allowedOrigins = [
-  ...new Set([
-    ...defaultOrigins,
-    ...environmentOrigins,
-  ]),
-];
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+        return;
+      }
 
-app.enableCors({
-  origin: (origin, callback) => {
-    // Allow requests with no Origin (curl, Postman, mobile apps)
-    if (!origin) {
-      return callback(null, true);
-    }
+      console.warn(
+        `Blocked CORS request from origin: ${origin}`,
+      );
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
+      callback(
+        new Error(
+          `Origin ${origin} is not allowed by CORS`,
+        ),
+        false,
+      );
+    },
+    credentials: true,
+    methods: [
+      'GET',
+      'HEAD',
+      'POST',
+      'PUT',
+      'PATCH',
+      'DELETE',
+      'OPTIONS',
+    ],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'Accept',
+    ],
+  });
 
-    console.error("Blocked by CORS:", origin);
-
-    return callback(
-      new Error(`Origin ${origin} is not allowed by CORS`),
-      false
-    );
-  },
-  credentials: true,
-});
-
-  const port = Number(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT) || 3000;
 
   await app.listen(port, '0.0.0.0');
 
   console.log(
-    `Harmonia backend listening on port ${port}`,
+    `Harmonia backend is running on port ${port}`,
   );
 }
 
 bootstrap().catch((error: unknown) => {
-  console.error('Failed to start Harmonia backend:', error);
+  console.error(
+    'Harmonia backend failed to start:',
+    error,
+  );
+
   process.exit(1);
 });
