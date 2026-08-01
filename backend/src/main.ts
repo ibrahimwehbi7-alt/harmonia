@@ -48,6 +48,23 @@ const environmentOrigins = process.env.CORS_ORIGIN
       .filter(Boolean)
   : [];
 
+// Allow both local development and production domains.
+const defaultOrigins = [
+  "http://localhost:8000",
+  "http://127.0.0.1:8000",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://theharmoniaproject.org",
+  "https://www.theharmoniaproject.org",
+];
+
+const environmentOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN
+      .split(",")
+      .map(origin => origin.trim())
+      .filter(Boolean)
+  : [];
+
 const allowedOrigins = [
   ...new Set([
     ...defaultOrigins,
@@ -56,7 +73,23 @@ const allowedOrigins = [
 ];
 
 app.enableCors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no Origin (curl, Postman, mobile apps)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.error("Blocked by CORS:", origin);
+
+    return callback(
+      new Error(`Origin ${origin} is not allowed by CORS`),
+      false
+    );
+  },
   credentials: true,
 });
 
