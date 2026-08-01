@@ -34,17 +34,31 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  const allowedOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN
-        .split(',')
-        .map((origin) => origin.trim())
-        .filter(Boolean)
-    : ['http://localhost:3000', 'http://localhost:5173'];
+const defaultOrigins = [
+  'http://localhost:8000',
+  'http://127.0.0.1:8000',
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
 
-  app.enableCors({
-    origin: allowedOrigins,
-    credentials: true,
-  });
+const environmentOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+  : [];
+
+const allowedOrigins = [
+  ...new Set([
+    ...defaultOrigins,
+    ...environmentOrigins,
+  ]),
+];
+
+app.enableCors({
+  origin: allowedOrigins,
+  credentials: true,
+});
 
   const port = Number(process.env.PORT ?? 3000);
 
