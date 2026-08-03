@@ -1,0 +1,11 @@
+# Harmonia Engineering Rules
+- Stack: NestJS 10, Prisma 5, PostgreSQL, TypeScript strict mode.
+- Preserve working APIs and migrations. Never rewrite unrelated modules.
+- Every private route uses JwtAuthGuard.
+- Organization-owned records must verify membership; writes require OWNER, ADMIN, or MODERATOR unless global ADMIN/SUPER_ADMIN.
+- Use src/prisma/prisma.service.ts only.
+- Validate all request DTOs with class-validator.
+- Never commit .env, credentials, JWTs, uploads, node_modules, dist, or generated secrets.
+- Before declaring work complete run: npx prisma validate; npx prisma generate; npm run build; npm test.
+- Database-destructive migrations, authentication changes, and production deployments require human approval.
+- Prefer complete, focused modules and reviewable pull requests.

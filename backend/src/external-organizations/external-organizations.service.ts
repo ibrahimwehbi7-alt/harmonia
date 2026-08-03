@@ -1,0 +1,16 @@
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { OrganizationRole, UserRole } from '@prisma/client';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateExternalOrganizationDto } from './dto/create-external-organization.dto';
+import { UpdateExternalOrganizationDto } from './dto/update-external-organization.dto';
+type User = { userId: string; email: string; role: UserRole };
+@Injectable()
+export class ExternalOrganizationsService {
+  constructor(private readonly prisma: PrismaService) {}
+  async create(dto: CreateExternalOrganizationDto, user: User) { await this.assertAccess(dto.organizationId, user, true); try { return await this.prisma.externalOrganization.create({ data: { ...dto, email: dto.email?.toLowerCase() }, include: { _count: { select: { contacts: true } } } }); } catch { throw new BadRequestException('An external organization with this name may already exist'); } }
+  async findAll(organizationId: string, search: string | undefined, user: User) { if (!organizationId) throw new BadRequestException('organizationId is required'); await this.assertAccess(organizationId, user); return this.prisma.externalOrganization.findMany({ where: { organizationId, ...(search ? { OR: [{ name: { contains: search, mode: 'insensitive' } }, { sector: { contains: search, mode: 'insensitive' } }] } : {}) }, include: { _count: { select: { contacts: true } } }, orderBy: { name: 'asc' } }); }
+  async findOne(id: string, user: User) { const row = await this.prisma.externalOrganization.findUnique({ where: { id }, include: { contacts: { orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }] }, _count: { select: { contacts: true } } } }); if (!row) throw new NotFoundException('External organization not found'); await this.assertAccess(row.organizationId, user); return row; }
+  async update(id: string, dto: UpdateExternalOrganizationDto, user: User) { const row = await this.findOne(id, user); const organizationId = dto.organizationId ?? row.organizationId; await this.assertAccess(organizationId, user, true); return this.prisma.externalOrganization.update({ where: { id }, data: { ...dto, email: dto.email?.toLowerCase() }, include: { _count: { select: { contacts: true } } } }); }
+  async remove(id: string, user: User) { const row = await this.findOne(id, user); await this.assertAccess(row.organizationId, user, true); return this.prisma.externalOrganization.delete({ where: { id } }); }
+  private async assertAccess(organizationId: string, user: User, manage = false) { const org = await this.prisma.organization.findUnique({ where: { id: organizationId } }); if (!org) throw new NotFoundException('Organization not found'); if (user.role === UserRole.ADMIN || user.role === UserRole.SUPER_ADMIN) return; const membership = await this.prisma.organizationMember.findUnique({ where: { userId_organizationId: { userId: user.userId, organizationId } } }); if (!membership) throw new ForbiddenException('You are not a member of this organization'); if (manage && membership.role !== OrganizationRole.OWNER && membership.role !== OrganizationRole.ADMIN && membership.role !== OrganizationRole.MODERATOR) throw new ForbiddenException('You cannot manage external organizations'); }
+}
