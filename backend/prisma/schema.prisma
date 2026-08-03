@@ -85,6 +85,33 @@ enum InteractionType {
   OTHER
 }
 
+enum EventStatus {
+  DRAFT
+  SCHEDULED
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+}
+
+enum EventType {
+  COMMUNITY
+  MEETING
+  WORKSHOP
+  FUNDRAISER
+  TOWN_HALL
+  CONFERENCE
+  SOCIAL
+  OTHER
+}
+
+enum EventAttendanceStatus {
+  INVITED
+  CONFIRMED
+  DECLINED
+  ATTENDED
+  NO_SHOW
+}
+
 model User {
   id        String @id @default(cuid())
   email     String @unique
@@ -105,6 +132,9 @@ model User {
 
   createdContacts     Contact[]            @relation("ContactCreatedBy")
   contactInteractions ContactInteraction[] @relation("InteractionCreatedBy")
+  createdEvents       Event[]              @relation("EventCreatedBy")
+  authoredNotes       Note[]               @relation("NoteAuthor")
+  uploadedFiles       FileAsset[]          @relation("FileAssetUploader")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -121,6 +151,9 @@ model Organization {
 
   contacts              Contact[]              @relation("WorkspaceContacts")
   externalOrganizations ExternalOrganization[] @relation("WorkspaceExternalOrganizations")
+  events                Event[]
+  notes                 Note[]
+  files                 FileAsset[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -162,6 +195,9 @@ model Project {
 
   contactLinks        ContactProject[]
   contactInteractions ContactInteraction[]
+  events              Event[]
+  notes               Note[]
+  files               FileAsset[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -301,6 +337,7 @@ model Contact {
 
   projectLinks ContactProject[]
   interactions ContactInteraction[]
+  eventLinks   EventContact[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -360,4 +397,124 @@ model ContactInteraction {
   @@index([createdById])
   @@index([occurredAt])
   @@index([followUpAt])
+}
+
+model Event {
+  id String @id @default(cuid())
+
+  title       String
+  description String?
+  type        EventType   @default(OTHER)
+  status      EventStatus @default(DRAFT)
+
+  startAt DateTime
+  endAt   DateTime?
+
+  timezone        String   @default("America/Chicago")
+  location        String?
+  virtualUrl      String?
+  capacity        Int?
+  isPublic        Boolean  @default(false)
+  registrationUrl String?
+  notes           String?
+  tags            String[] @default([])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  createdById String
+  createdBy   User   @relation("EventCreatedBy", fields: [createdById], references: [id])
+
+  contacts EventContact[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([createdById])
+  @@index([status])
+  @@index([type])
+  @@index([startAt])
+}
+
+model EventContact {
+  id String @id @default(cuid())
+
+  eventId String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  contactId String
+  contact   Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+
+  status EventAttendanceStatus @default(INVITED)
+  role   String?
+  notes  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, contactId])
+  @@index([contactId])
+  @@index([status])
+}
+
+model Note {
+  id String @id @default(cuid())
+
+  title    String
+  content  String
+  category String   @default("general")
+  pinned   Boolean  @default(false)
+  tags     String[] @default([])
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  authorId String
+  author   User   @relation("NoteAuthor", fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([authorId])
+  @@index([category])
+  @@index([pinned])
+  @@index([updatedAt])
+}
+
+model FileAsset {
+  id String @id @default(cuid())
+
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  uploadedById String
+  uploadedBy   User   @relation("FileAssetUploader", fields: [uploadedById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([projectId])
+  @@index([uploadedById])
+  @@index([mimeType])
+  @@index([createdAt])
 }
