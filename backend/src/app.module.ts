@@ -16,6 +16,8 @@ import { TaskCommentsModule } from './task-comments/task-comments.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
 
+import { SiteContentModule } from './site-content/site-content.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -34,6 +36,7 @@ import { UsersModule } from './users/users.module';
     EventsModule,
     NotesModule,
     FilesModule,
+    SiteContentModule,
   ],
   controllers: [HealthController],
 })

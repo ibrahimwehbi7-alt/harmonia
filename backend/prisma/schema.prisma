@@ -130,6 +130,8 @@ model User {
   taskComments TaskComment[]
   attachments  Attachment[]
 
+  publishedSitePages SitePage[] @relation("SitePagePublishedBy")
+
   createdContacts     Contact[]            @relation("ContactCreatedBy")
   contactInteractions ContactInteraction[] @relation("InteractionCreatedBy")
   createdEvents       Event[]              @relation("EventCreatedBy")
@@ -148,6 +150,8 @@ model Organization {
 
   members  OrganizationMember[]
   projects Project[]
+
+  sitePages SitePage[]
 
   contacts              Contact[]              @relation("WorkspaceContacts")
   externalOrganizations ExternalOrganization[] @relation("WorkspaceExternalOrganizations")
@@ -517,4 +521,29 @@ model FileAsset {
   @@index([uploadedById])
   @@index([mimeType])
   @@index([createdAt])
+}
+
+model SitePage {
+  id  String @id @default(cuid())
+  key String
+
+  // Published content consumed by the public website.
+  data Json
+
+  // Unpublished working copy used by the admin preview workflow.
+  draftData        Json?
+  draftUpdatedAt   DateTime?
+  publishedVersion Int       @default(0)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  publishedById  String
+  publishedBy    User         @relation("SitePagePublishedBy", fields: [publishedById], references: [id])
+  publishedAt    DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, key])
+  @@index([organizationId])
+  @@index([publishedById])
 }
