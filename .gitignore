@@ -1,2 +1,18 @@
 
 .DS_Store
+
+# Local backups and generated archives
+*-backup-*/
+**/*-backup-*/
+backend.zip
+backend/backend-source.zip
+harmonia-day4-source.zip
+
+# Local quarantine folders
+backend/entity-install-quarantine/
+backend/prisma/migrations-quarantine/
+
+# Runtime and private files
+backend/uploads/
+backend/.env
+.DS_Store
