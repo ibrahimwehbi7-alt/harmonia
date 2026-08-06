@@ -17,6 +17,7 @@
         finance: "Finance",
         analytics: "Analytics",
         marketing: "Marketing",
+        users: "Users & Access",
         "project-workspace":
             "Project Workspace"
     };
@@ -33,7 +34,8 @@
         messages: "renderMessages",
         finance: "renderFinance",
         analytics: "renderAnalytics",
-        marketing: "renderMarketing"
+        marketing: "renderMarketing",
+        users: "renderUsersPage"
     };
 
     let initialized = false;

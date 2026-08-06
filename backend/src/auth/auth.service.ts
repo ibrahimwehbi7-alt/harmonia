@@ -36,7 +36,16 @@ export class AuthService {
       lastName: dto.lastName.trim(),
     });
 
-    return this.sanitizeUser(user);
+    const payload: JwtPayload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+      user: this.sanitizeUser(user),
+    };
   }
 
   async login(dto: LoginDto) {

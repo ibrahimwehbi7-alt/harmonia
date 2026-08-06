@@ -38,6 +38,7 @@
       <button class="nav-button" data-page="finance">Finance</button>
       <button class="nav-button" data-page="analytics">Analytics</button>
       <button class="nav-button" data-page="marketing">Marketing</button>
+      <button class="nav-button" data-page="users">Users & Access</button>
 
       <div class="sidebar-footer">Harmonia Admin v3</div>
     </aside>
@@ -1960,7 +1961,24 @@
   </section>
 </div>
 
-    </main>
+    
+
+<section class="admin-page" id="users" hidden aria-hidden="true">
+  <div class="page-header-row">
+    <div><p class="eyebrow">Organization</p><h2>Users & Access</h2><p>New public accounts begin as Viewers. Promote people only when their responsibilities require it.</p></div>
+    <input id="usersSearch" class="users-search" type="search" placeholder="Search name or email" aria-label="Search users">
+  </div>
+  <div class="users-role-guide">
+    <article><strong>Viewer</strong><span>Receives assigned work and communication; cannot change organization-wide records.</span></article>
+    <article><strong>Team Member</strong><span>Can work inside assigned operational areas.</span></article>
+    <article><strong>Admin</strong><span>Can manage organization-wide systems and access.</span></article>
+  </div>
+  <div class="users-table-wrap">
+    <table class="users-table"><thead><tr><th>Person</th><th>Organization</th><th>Access level</th><th>Joined</th></tr></thead><tbody id="usersTableBody"></tbody></table>
+    <p id="usersEmptyState" class="empty-state" hidden>No users found.</p>
+  </div>
+</section>
+</main>
   </div>
 <script src="js/ui.js"></script>
 
@@ -2029,6 +2047,7 @@
 
 
 <script src="js/site-content/siteContentManager.js?v=11"></script>
+<script src="js/users/usersPage.js?v=20260806-s2"></script>
 <script src="js/router.js?v=20260805-5"></script>
 <script src="js/app.js?v=20260806-v1"></script>
 </body>
