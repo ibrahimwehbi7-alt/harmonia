@@ -546,3 +546,23 @@ body.internal-page .page {
     flex-direction: column;
   }
 }
+.public-partners{margin-top:3rem}.partners-public-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem}.partner-public-card{background:rgba(255,255,255,.9);border-radius:16px;padding:1.25rem}.partner-public-card h3{margin-top:0}.partner-public-card a{font-weight:700}
+
+
+/* Public event publishing */
+.event-card-featured {
+  border-color: rgba(255,255,255,.55);
+  background: rgba(255,255,255,.12);
+}
+.event-featured-badge {
+  display: inline-block;
+  margin-left: .75rem;
+  padding: .2rem .55rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: .72rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.event-card-message { min-height: 220px; }

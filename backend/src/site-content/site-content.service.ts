@@ -41,7 +41,7 @@ export class SiteContentService {
 
     if (!organization) throw new NotFoundException('Organization not found');
 
-    return this.prisma.event.findMany({
+    const events = await this.prisma.event.findMany({
       where: {
         organizationId: organization.id,
         isPublic: true,
@@ -62,9 +62,16 @@ export class SiteContentService {
         registrationUrl: true,
         tags: true,
       },
-      orderBy: { startAt: 'asc' },
+      orderBy: [{ startAt: 'asc' }, { createdAt: 'asc' }],
       take: Math.min(Math.max(limit || 12, 1), 50),
     });
+
+    return events.map((event) => ({
+      ...event,
+      featured: event.tags.some(
+        (tag) => tag.trim().toLowerCase() === 'featured',
+      ),
+    }));
   }
 
   async getOne(orgId: string, key: string, user: AuthUser) {

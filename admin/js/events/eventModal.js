@@ -43,6 +43,15 @@ function getEventModalElements() {
         eventPublicInput:
             document.getElementById("eventPublicInput"),
 
+        eventFeaturedInput:
+            document.getElementById("eventFeaturedInput"),
+
+        eventRegistrationUrlInput:
+            document.getElementById("eventRegistrationUrlInput"),
+
+        eventVirtualUrlInput:
+            document.getElementById("eventVirtualUrlInput"),
+
         saveButton:
             document.getElementById("saveEventButton")
     };
@@ -96,6 +105,18 @@ function resetEventForm() {
 
     if (elements.eventPublicInput) {
         elements.eventPublicInput.checked = false;
+    }
+
+    if (elements.eventFeaturedInput) {
+        elements.eventFeaturedInput.checked = false;
+    }
+
+    if (elements.eventRegistrationUrlInput) {
+        elements.eventRegistrationUrlInput.value = "";
+    }
+
+    if (elements.eventVirtualUrlInput) {
+        elements.eventVirtualUrlInput.value = "";
     }
 }
 
@@ -183,6 +204,21 @@ function openEventModal(
             elements.eventPublicInput.checked =
                 Boolean(eventData.isPublic);
         }
+
+        if (elements.eventFeaturedInput) {
+            elements.eventFeaturedInput.checked =
+                Boolean(eventData.featured);
+        }
+
+        if (elements.eventRegistrationUrlInput) {
+            elements.eventRegistrationUrlInput.value =
+                eventData.registrationUrl || "";
+        }
+
+        if (elements.eventVirtualUrlInput) {
+            elements.eventVirtualUrlInput.value =
+                eventData.virtualUrl || "";
+        }
     }
 
     elements.modal.hidden = false;
@@ -217,6 +253,34 @@ function buildEventData() {
         return null;
     }
 
+    const startDate =
+        elements.eventStartDateInput?.value || "";
+
+    if (!startDate) {
+        alert("Please choose a start date.");
+        elements.eventStartDateInput?.focus();
+        return null;
+    }
+
+    const isPublic = Boolean(
+        elements.eventPublicInput?.checked
+    );
+
+    const status =
+        elements.eventStatusInput?.value ||
+        "planning";
+
+    if (
+        isPublic &&
+        ["idea", "completed", "cancelled"].includes(status)
+    ) {
+        alert(
+            "Public events must be Planning, Tentative, or Confirmed."
+        );
+        elements.eventStatusInput?.focus();
+        return null;
+    }
+
     console.log(
         "Saving event with project ID:",
         activeEventProjectId
@@ -232,13 +296,9 @@ function buildEventData() {
             elements.eventTypeInput?.value ||
             "meeting",
 
-        status:
-            elements.eventStatusInput?.value ||
-            "planning",
+        status,
 
-        startDate:
-            elements.eventStartDateInput?.value ||
-            "",
+        startDate,
 
         endDate:
             elements.eventEndDateInput?.value ||
@@ -260,10 +320,20 @@ function buildEventData() {
             elements.eventDescriptionInput?.value.trim() ||
             "",
 
-        isPublic:
+        isPublic,
+
+        featured:
             Boolean(
-                elements.eventPublicInput?.checked
-            )
+                elements.eventFeaturedInput?.checked
+            ),
+
+        registrationUrl:
+            elements.eventRegistrationUrlInput?.value.trim() ||
+            "",
+
+        virtualUrl:
+            elements.eventVirtualUrlInput?.value.trim() ||
+            ""
     };
 }
 

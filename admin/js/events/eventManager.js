@@ -58,7 +58,9 @@
             startDate: start.date,
             startTime: start.time,
             endDate: end.date,
-            endTime: end.time
+            endTime: end.time,
+            featured: Array.isArray(event.tags) &&
+                event.tags.some(tag => String(tag).toLowerCase() === "featured")
         };
     }
     function payload(data) {
@@ -73,7 +75,10 @@
             endAt: data.endDate ? combine(data.endDate, data.endTime, "17:00") : undefined,
             timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "America/Chicago",
             location: data.location || undefined,
+            virtualUrl: data.virtualUrl || undefined,
+            registrationUrl: data.registrationUrl || undefined,
             isPublic: Boolean(data.isPublic),
+            tags: data.featured ? ["featured"] : [],
             organizationId: organizationId(),
             projectId: data.projectId || undefined
         };

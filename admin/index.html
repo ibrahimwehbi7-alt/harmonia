@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Harmonia Admin · Version 1</title>
 <link rel="stylesheet" href="css/main.css?v=5">
+<link rel="stylesheet" href="css/site-content.css?v=11">
 </head>
 
 <body>
@@ -313,26 +314,11 @@
   </div>
 </section>
 
-      <section class="admin-page" id="homepage">
-        <div class="placeholder-card">
-          <h2>Homepage Editor</h2>
-          <p>The homepage editor will be built here.</p>
-        </div>
-      </section>
+      <section class="admin-page" id="homepage"><div class="site-editor"><div class="site-editor-header"><div><p class="eyebrow">Public Website</p><h2>Homepage</h2><p>Edit the live public website and publish when ready.</p></div><div class="site-editor-actions"><button class="secondary-button" id="homepageSaveDraftButton" type="button">Save Draft</button><button class="secondary-button" id="homepagePreviewButton" type="button">Preview</button><button class="primary-button" id="homepagePublishButton" type="button">Publish</button></div></div><div class="site-editor-card"><div class="site-editor-grid"><label class="site-editor-field"><span>About panel</span><textarea id="homepageAboutLabel" rows="4"></textarea></label><label class="site-editor-field"><span>Connect panel</span><textarea id="homepageConnectLabel" rows="4"></textarea></label><label class="site-editor-field"><span>Upcoming panel</span><textarea id="homepageUpcomingLabel" rows="4"></textarea></label><label class="site-editor-field"><span>Gallery panel</span><textarea id="homepageGalleryLabel" rows="4"></textarea></label></div><p class="site-editor-status" id="homepageEditorStatus"></p></div></div></section>
 
-      <section class="admin-page" id="about">
-        <div class="placeholder-card">
-          <h2>About Editor</h2>
-          <p>The About page editor will be built here.</p>
-        </div>
-      </section>
+      <section class="admin-page" id="about"><div class="site-editor"><div class="site-editor-header"><div><p class="eyebrow">Public Website</p><h2>About Page</h2><p>Edit the live public website and publish when ready.</p></div><div class="site-editor-actions"><button class="secondary-button" id="aboutSaveDraftButton" type="button">Save Draft</button><button class="secondary-button" id="aboutPreviewButton" type="button">Preview</button><button class="primary-button" id="aboutPublishButton" type="button">Publish</button></div></div><div class="site-editor-card"><div class="site-editor-grid"><label class="site-editor-field site-editor-field-wide"><span>Title</span><input id="aboutEditorTitle"></label><label class="site-editor-field site-editor-field-wide"><span>Paragraph 1</span><textarea id="aboutEditorParagraph1" rows="5"></textarea></label><label class="site-editor-field site-editor-field-wide"><span>Paragraph 2</span><textarea id="aboutEditorParagraph2" rows="5"></textarea></label><label class="site-editor-field site-editor-field-wide"><span>Paragraph 3</span><textarea id="aboutEditorParagraph3" rows="5"></textarea></label></div><p class="site-editor-status" id="aboutEditorStatus"></p></div></div></section>
 
-      <section class="admin-page" id="connect">
-        <div class="placeholder-card">
-          <h2>Connect Editor</h2>
-          <p>The Connect page editor will be built here.</p>
-        </div>
-      </section>
+      <section class="admin-page" id="connect"><div class="site-editor"><div class="site-editor-header"><div><p class="eyebrow">Public Website</p><h2>Connect Page</h2><p>Edit the live public website and publish when ready.</p></div><div class="site-editor-actions"><button class="secondary-button" id="connectSaveDraftButton" type="button">Save Draft</button><button class="secondary-button" id="connectPreviewButton" type="button">Preview</button><button class="primary-button" id="connectPublishButton" type="button">Publish</button></div></div><div class="site-editor-card"><div class="site-editor-grid"><label class="site-editor-field site-editor-field-wide"><span>Title</span><input id="connectEditorTitle"></label><label class="site-editor-field site-editor-field-wide"><span>Paragraph 1</span><textarea id="connectEditorParagraph1" rows="6"></textarea></label><label class="site-editor-field site-editor-field-wide"><span>Paragraph 2</span><textarea id="connectEditorParagraph2" rows="5"></textarea></label></div><p class="site-editor-status" id="connectEditorStatus"></p></div></div></section>
 
    <section class="admin-page" id="events">
   <div class="events-page">
@@ -343,6 +329,11 @@
         <p class="events-page-intro">
           Create, organize, and track Harmonia events, meetings, and deadlines.
         </p>
+        <div class="event-publishing-guide">
+          <strong>Website publishing:</strong>
+          <span><b>Draft</b> status or Public off keeps the event internal.</span>
+          <span><b>Scheduled/Confirmed</b> with Public on publishes it to Upcoming automatically.</span>
+        </div>
       </div>
 
       <button class="primary-button" id="newEventButton">
@@ -631,9 +622,7 @@
         </p>
       </div>
 
-      <button class="primary-button" id="newGalleryButton" type="button">
-        + Add Image
-      </button>
+      <div class="module-header-actions"><button class="secondary-button" id="publishGalleryButton" type="button">Publish Gallery</button><button class="primary-button" id="newGalleryButton" type="button">+ Add Image</button></div>
     </div>
 
     <div class="module-toolbar gallery-toolbar">
@@ -1291,9 +1280,7 @@
         </p>
       </div>
 
-      <button class="primary-button" id="newPartnerButton" type="button">
-        + New Partner
-      </button>
+      <div class="module-header-actions"><button class="secondary-button" id="publishPartnersButton" type="button">Publish Partners</button><button class="primary-button" id="newPartnerButton" type="button">+ New Partner</button></div>
     </div>
 
     <div class="module-toolbar">
@@ -1736,9 +1723,32 @@
           ></textarea>
         </label>
 
+        <label class="event-field event-field-wide">
+          <span>Registration or information link</span>
+          <input
+            id="eventRegistrationUrlInput"
+            type="url"
+            placeholder="https://..."
+          />
+        </label>
+
+        <label class="event-field event-field-wide">
+          <span>Virtual meeting link (optional)</span>
+          <input
+            id="eventVirtualUrlInput"
+            type="url"
+            placeholder="https://..."
+          />
+        </label>
+
         <label class="event-checkbox-field event-field-wide">
           <input id="eventPublicInput" type="checkbox" />
-          <span>Show this event on the public website later</span>
+          <span>Publish on the public website when status is Planning, Tentative, or Confirmed</span>
+        </label>
+
+        <label class="event-checkbox-field event-field-wide">
+          <input id="eventFeaturedInput" type="checkbox" />
+          <span>Feature this event on the public website</span>
         </label>
       </div>
 
@@ -2018,6 +2028,7 @@
         <script src="js/core/integrationBootstrap.js?v=1"></script>
 
 
+<script src="js/site-content/siteContentManager.js?v=11"></script>
 <script src="js/router.js?v=20260805-5"></script>
 <script src="js/app.js?v=20260806-v1"></script>
 </body>

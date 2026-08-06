@@ -5,6 +5,7 @@
  * The website remains usable when a service is not configured.
  */
 window.HARMONIA_CONFIG = {
+  apiBaseUrl: "https://harmonia-production-720f.up.railway.app",
   // Example: "https://formspree.io/f/abcdwxyz"
   formspreeEndpoint: "https://formspree.io/f/xnjeppnv",
 
