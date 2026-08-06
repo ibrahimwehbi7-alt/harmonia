@@ -138,3 +138,7 @@ if (document.readyState === "loading") {
 window.renderPartners = renderPartners;
 
 console.log("✅ Partners Page Loaded");
+
+document.addEventListener("harmonia:partners-updated", () => {
+    if (typeof window.renderPartners === "function") window.renderPartners();
+});

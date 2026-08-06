@@ -176,7 +176,7 @@ function collectPartnersModalData() {
     };
 }
 
-function savePartnersModal() {
+async function savePartnersModal() {
     if (!window.HarmoniaPartners) {
         console.error("HarmoniaPartners is unavailable.");
         return;
@@ -190,9 +190,9 @@ function savePartnersModal() {
     }
 
     if (activePartnersItemId) {
-        window.HarmoniaPartners.update(activePartnersItemId, data);
+        await window.HarmoniaPartners.update(activePartnersItemId, data);
     } else {
-        window.HarmoniaPartners.create(data);
+        await window.HarmoniaPartners.create(data);
     }
 
     closePartnersModal();

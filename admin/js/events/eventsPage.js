@@ -717,3 +717,7 @@ window.initializeEventsPage =
 console.log(
   "✅ Events Page script ready"
 );
+
+document.addEventListener("harmonia:events-updated", () => {
+    if (typeof window.renderEvents === "function") window.renderEvents();
+});

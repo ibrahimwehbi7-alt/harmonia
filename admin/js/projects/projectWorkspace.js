@@ -65,8 +65,8 @@ function openProjectWorkspace(projectId) {
 
     if (titleElement) {
         titleElement.textContent =
-            project.name ||
             project.title ||
+            project.name ||
             "Untitled Project";
     }
 
@@ -78,7 +78,13 @@ function openProjectWorkspace(projectId) {
 
     if (statusElement) {
         statusElement.textContent =
-            project.status || "Planning";
+            typeof window.formatProjectStatus ===
+            "function"
+                ? window.formatProjectStatus(
+                    project.status
+                )
+                : project.status ||
+                  "Planning";
     }
 
     const progress = Math.max(
@@ -101,12 +107,15 @@ function openProjectWorkspace(projectId) {
 
     if (colorElement) {
         colorElement.style.backgroundColor =
-            project.color || "#cccccc";
+            project.color ||
+            "#cccccc";
     }
 
     showProjectWorkspacePage();
     renderWorkspaceTasks();
     renderWorkspaceEvents();
+    renderWorkspaceNotes();
+    renderWorkspaceFiles();
 }
 
 function renderWorkspaceTasks() {
@@ -132,8 +141,7 @@ function renderWorkspaceTasks() {
             "<p>No project is currently open.</p>";
 
         if (taskCountElement) {
-            taskCountElement.textContent =
-                "0";
+            taskCountElement.textContent = "0";
         }
 
         return;
@@ -153,17 +161,19 @@ function renderWorkspaceTasks() {
         return;
     }
 
-    const tasks =
-        window.WorkManager
-            .getAllWork()
-            .filter(task => {
-                return (
-                    String(task.projectId) ===
-                    String(
-                        currentWorkspaceProject.id
-                    )
-                );
-            });
+    const allWork =
+        window.WorkManager.getAllWork();
+
+    const tasks = Array.isArray(allWork)
+        ? allWork.filter(task => {
+              return (
+                  String(task.projectId) ===
+                  String(
+                      currentWorkspaceProject.id
+                  )
+              );
+          })
+        : [];
 
     if (taskCountElement) {
         taskCountElement.textContent =
@@ -204,6 +214,9 @@ function renderWorkspaceTasks() {
         const taskStatus =
             document.createElement("span");
 
+        taskStatus.className =
+            "workspace-task-status";
+
         taskStatus.textContent =
             task.status ||
             "Not started";
@@ -220,13 +233,16 @@ function renderWorkspaceTasks() {
     });
 }
 
-function formatWorkspaceEventDate(dateValue) {
+function formatWorkspaceEventDate(
+    dateValue
+) {
     if (!dateValue) {
         return "Date not set";
     }
 
-    const date =
-        new Date(`${dateValue}T00:00:00`);
+    const date = new Date(
+        `${dateValue}T00:00:00`
+    );
 
     if (
         Number.isNaN(date.getTime())
@@ -244,13 +260,17 @@ function formatWorkspaceEventDate(dateValue) {
     );
 }
 
-function formatWorkspaceEventTime(timeValue) {
+function formatWorkspaceEventTime(
+    timeValue
+) {
     if (!timeValue) {
         return "";
     }
 
     const parts =
-        timeValue.split(":").map(Number);
+        timeValue
+            .split(":")
+            .map(Number);
 
     const hours = parts[0];
     const minutes = parts[1];
@@ -324,29 +344,34 @@ function renderWorkspaceEvents() {
         return;
     }
 
-    const events =
+    const projectEvents =
         window.HarmoniaEvents
             .getByProjectId(
                 currentWorkspaceProject.id
-            )
-            .sort(
-                (
-                    firstEvent,
-                    secondEvent
-                ) => {
-                    const firstDate =
-                        firstEvent.startDate ||
-                        "9999-12-31";
-
-                    const secondDate =
-                        secondEvent.startDate ||
-                        "9999-12-31";
-
-                    return firstDate.localeCompare(
-                        secondDate
-                    );
-                }
             );
+
+    const events =
+        Array.isArray(projectEvents)
+            ? [...projectEvents].sort(
+                  (
+                      firstEvent,
+                      secondEvent
+                  ) => {
+                      const firstDate =
+                          firstEvent.startDate ||
+                          "9999-12-31";
+
+                      const secondDate =
+                          secondEvent.startDate ||
+                          "9999-12-31";
+
+                      return firstDate
+                          .localeCompare(
+                              secondDate
+                          );
+                  }
+              )
+            : [];
 
     if (eventCountElement) {
         eventCountElement.textContent =
@@ -387,7 +412,8 @@ function renderWorkspaceEvents() {
             document.createElement("span");
 
         status.textContent =
-            event.status || "Planning";
+            event.status ||
+            "Planning";
 
         heading.appendChild(title);
         heading.appendChild(status);
@@ -450,6 +476,10 @@ function renderWorkspaceEvents() {
                     window.openEventModal(
                         event
                     );
+                } else {
+                    console.error(
+                        "openEventModal is unavailable."
+                    );
                 }
             }
         );
@@ -470,21 +500,32 @@ function renderWorkspaceEvents() {
             () => {
                 const confirmed =
                     window.confirm(
-                        `Delete "${event.title}"?`
+                        `Delete "${
+                            event.title ||
+                            "this event"
+                        }"?`
                     );
 
                 if (!confirmed) {
                     return;
                 }
 
-                window.HarmoniaEvents
-                    .delete(event.id);
+                if (
+                    window.HarmoniaEvents &&
+                    typeof window
+                        .HarmoniaEvents
+                        .delete ===
+                        "function"
+                ) {
+                    window.HarmoniaEvents
+                        .delete(event.id);
 
-                document.dispatchEvent(
-                    new CustomEvent(
-                        "harmonia:events-updated"
-                    )
-                );
+                    document.dispatchEvent(
+                        new CustomEvent(
+                            "harmonia:events-updated"
+                        )
+                    );
+                }
             }
         );
 
@@ -510,11 +551,36 @@ function renderWorkspaceEvents() {
     });
 }
 
+
+function renderWorkspaceNotes() {
+    const box=document.getElementById("workspaceNotesList");
+    const count=document.getElementById("workspaceNoteCount");
+    if(!box||!currentWorkspaceProject)return;
+    const items=window.HarmoniaNotes?.getByProjectId?.(currentWorkspaceProject.id)||[];
+    if(count)count.textContent=String(items.length);
+    box.innerHTML=items.length?items.map(n=>`<article class="workspace-task-card"><h4>${escapeWorkspaceHtml(n.title||"Untitled Note")}</h4><p>${escapeWorkspaceHtml((n.content||"").slice(0,240)||"No content")}</p></article>`).join(""):"<p>No notes have been added to this project yet.</p>";
+}
+function renderWorkspaceFiles() {
+    const box=document.getElementById("workspaceFilesList");
+    const count=document.getElementById("workspaceFileCount");
+    if(!box||!currentWorkspaceProject)return;
+    const items=window.HarmoniaFiles?.getByProjectId?.(currentWorkspaceProject.id)||[];
+    if(count)count.textContent=String(items.length);
+    box.innerHTML="";
+    if(!items.length){box.innerHTML="<p>No files have been added to this project yet.</p>";return;}
+    for(const file of items){const a=document.createElement("article");a.className="workspace-task-card";a.innerHTML=`<h4>${escapeWorkspaceHtml(file.title||file.originalName||"Untitled File")}</h4><p>${escapeWorkspaceHtml(file.description||file.mimeType||"")}</p>`;a.addEventListener("click",()=>window.open(window.HarmoniaFiles.resolveUrl(file),"_blank","noopener"));box.appendChild(a);}
+}
+function escapeWorkspaceHtml(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
+
 function showProjectWorkspacePage() {
-    console.log("Showing workspace page");
+    console.log(
+        "Showing workspace page"
+    );
 
     const workspacePage =
-        document.getElementById("project-workspace");
+        document.getElementById(
+            "project-workspace"
+        );
 
     if (!workspacePage) {
         console.error(
@@ -526,25 +592,159 @@ function showProjectWorkspacePage() {
     document
         .querySelectorAll(".admin-page")
         .forEach(page => {
-            page.classList.remove("active");
+            page.classList.remove(
+                "active"
+            );
             page.hidden = true;
+            page.setAttribute(
+                "aria-hidden",
+                "true"
+            );
         });
 
     workspacePage.hidden = false;
-    workspacePage.removeAttribute("hidden");
-    workspacePage.classList.add("active");
+    workspacePage.removeAttribute(
+        "hidden"
+    );
+    workspacePage.removeAttribute(
+        "aria-hidden"
+    );
+    workspacePage.classList.add(
+        "active"
+    );
+    workspacePage.style.display =
+        "block";
+    workspacePage.style.visibility =
+        "visible";
+    workspacePage.style.opacity = "1";
+
+    const workspaceContent =
+        workspacePage.querySelector(
+            ".project-workspace-page"
+        );
+
+    if (workspaceContent) {
+        workspaceContent.hidden = false;
+        workspaceContent.removeAttribute(
+            "hidden"
+        );
+        workspaceContent.removeAttribute(
+            "aria-hidden"
+        );
+        workspaceContent.style.display =
+            "";
+        workspaceContent.style.visibility =
+            "visible";
+        workspaceContent.style.opacity =
+            "1";
+    }
+
+    const panels =
+        workspacePage.querySelectorAll(
+            "[data-project-panel], " +
+            "[data-workspace-panel]"
+        );
+
+    let activePanel =
+        workspacePage.querySelector(
+            "[data-project-panel].active, " +
+            "[data-workspace-panel].active"
+        );
+
+    if (
+        !activePanel &&
+        panels.length > 0
+    ) {
+        activePanel =
+            workspacePage.querySelector(
+                '[data-project-panel="overview"], ' +
+                '[data-workspace-panel="overview"]'
+            ) ||
+            panels[0];
+
+        activePanel.classList.add(
+            "active"
+        );
+    }
+
+    panels.forEach(panel => {
+        const shouldShow =
+            panel === activePanel;
+
+        panel.classList.toggle(
+            "active",
+            shouldShow
+        );
+
+        panel.hidden =
+            !shouldShow;
+
+        panel.style.display =
+            shouldShow
+                ? ""
+                : "none";
+    });
+
+    const tabs =
+        workspacePage.querySelectorAll(
+            "[data-project-tab], " +
+            "[data-workspace-tab]"
+        );
+
+    let activeTab =
+        workspacePage.querySelector(
+            "[data-project-tab].active, " +
+            "[data-workspace-tab].active"
+        );
+
+    if (
+        !activeTab &&
+        tabs.length > 0
+    ) {
+        activeTab =
+            workspacePage.querySelector(
+                '[data-project-tab="overview"], ' +
+                '[data-workspace-tab="overview"]'
+            ) ||
+            tabs[0];
+
+        activeTab.classList.add(
+            "active"
+        );
+    }
+
+    tabs.forEach(tab => {
+        tab.classList.toggle(
+            "active",
+            tab === activeTab
+        );
+    });
 
     const pageTitle =
-        document.getElementById("pageTitle");
+        document.getElementById(
+            "pageTitle"
+        );
 
     if (pageTitle) {
         pageTitle.textContent =
-            currentWorkspaceProject?.title ||
-            currentWorkspaceProject?.name ||
+            currentWorkspaceProject
+                ?.title ||
+            currentWorkspaceProject
+                ?.name ||
             "Project Workspace";
     }
-}
 
+    if (
+        window.location.hash !==
+        "#project-workspace"
+    ) {
+        window.history.replaceState(
+            null,
+            "",
+            "#project-workspace"
+        );
+    }
+}
 
 function backToProjects() {
     const workspacePage =
@@ -562,14 +762,27 @@ function backToProjects() {
             "active"
         );
         workspacePage.hidden = true;
+        workspacePage.setAttribute(
+            "aria-hidden",
+            "true"
+        );
+        workspacePage.style.display =
+            "none";
     }
 
     if (projectsPage) {
         projectsPage.hidden = false;
-        projectsPage.removeAttribute("hidden");
+        projectsPage.removeAttribute(
+            "hidden"
+        );
+        projectsPage.removeAttribute(
+            "aria-hidden"
+        );
         projectsPage.classList.add(
             "active"
         );
+        projectsPage.style.display =
+            "";
     }
 
     const pageTitle =
@@ -583,26 +796,70 @@ function backToProjects() {
     }
 
     currentWorkspaceProject = null;
+
+    if (
+        window.location.hash !==
+        "#projects"
+    ) {
+        window.history.replaceState(
+            null,
+            "",
+            "#projects"
+        );
+    }
+
+    if (
+        typeof window
+            .renderProjects ===
+        "function"
+    ) {
+        window.renderProjects();
+    }
 }
 
 function initializeWorkspaceTabs() {
+    const workspacePage =
+        document.getElementById(
+            "project-workspace"
+        );
+
+    if (!workspacePage) {
+        return;
+    }
+
     const tabs =
-        document.querySelectorAll(
-            "[data-project-tab]"
+        workspacePage.querySelectorAll(
+            "[data-project-tab], " +
+            "[data-workspace-tab]"
         );
 
     const panels =
-        document.querySelectorAll(
-            "[data-project-panel]"
+        workspacePage.querySelectorAll(
+            "[data-project-panel], " +
+            "[data-workspace-panel]"
         );
 
     tabs.forEach(tab => {
+        if (
+            tab.dataset
+                .workspaceInitialized ===
+            "true"
+        ) {
+            return;
+        }
+
+        tab.dataset
+            .workspaceInitialized =
+            "true";
+
         tab.addEventListener(
             "click",
             function () {
                 const selectedTab =
                     tab.dataset
-                        .projectTab;
+                        .projectTab ||
+                    tab.dataset
+                        .workspaceTab;
 
                 tabs.forEach(item => {
                     item.classList.toggle(
@@ -612,13 +869,23 @@ function initializeWorkspaceTabs() {
                 });
 
                 panels.forEach(panel => {
-                    const shouldShow =
+                    const panelName =
                         panel.dataset
-                            .projectPanel ===
+                            .projectPanel ||
+                        panel.dataset
+                            .workspacePanel;
+
+                    const shouldShow =
+                        panelName ===
                         selectedTab;
 
                     panel.hidden =
                         !shouldShow;
+
+                    panel.style.display =
+                        shouldShow
+                            ? ""
+                            : "none";
 
                     panel.classList.toggle(
                         "active",
@@ -633,19 +900,17 @@ function initializeWorkspaceTabs() {
                     renderWorkspaceTasks();
                 }
 
-                if (
-                    selectedTab ===
-                    "events"
-                ) {
-                    renderWorkspaceEvents();
-                }
+                if (selectedTab === "events") renderWorkspaceEvents();
+                if (selectedTab === "notes") renderWorkspaceNotes();
+                if (selectedTab === "files") renderWorkspaceFiles();
             }
         );
     });
 }
 
-
-function openWorkspaceAdminPage(pageId) {
+function openWorkspaceAdminPage(
+    pageId
+) {
     if (
         typeof window.openAdminPage ===
         "function"
@@ -667,13 +932,19 @@ function openWorkspaceAdminPage(pageId) {
     document
         .querySelectorAll(".admin-page")
         .forEach(page => {
-            page.classList.remove("active");
+            page.classList.remove(
+                "active"
+            );
             page.hidden = true;
         });
 
     targetPage.hidden = false;
-    targetPage.removeAttribute("hidden");
-    targetPage.classList.add("active");
+    targetPage.removeAttribute(
+        "hidden"
+    );
+    targetPage.classList.add(
+        "active"
+    );
 
     return true;
 }
@@ -683,25 +954,32 @@ function setWorkspaceEditorProject(
     projectId
 ) {
     const field =
-        document.getElementById(fieldId);
+        document.getElementById(
+            fieldId
+        );
 
     if (!field) {
         return false;
     }
 
-    field.value = String(projectId);
+    field.value =
+        String(projectId);
 
     field.dispatchEvent(
         new Event(
             "change",
-            { bubbles: true }
+            {
+                bubbles: true
+            }
         )
     );
 
     field.dispatchEvent(
         new Event(
             "input",
-            { bubbles: true }
+            {
+                bubbles: true
+            }
         )
     );
 
@@ -732,12 +1010,14 @@ function openWorkspaceTaskEditor() {
     openWorkspaceAdminPage("work");
     window.openWorkEditor();
 
-    window.requestAnimationFrame(() => {
-        setWorkspaceEditorProject(
-            "workEditorProject",
-            projectId
-        );
-    });
+    window.requestAnimationFrame(
+        () => {
+            setWorkspaceEditorProject(
+                "workEditorProject",
+                projectId
+            );
+        }
+    );
 }
 
 function openWorkspaceNoteEditor() {
@@ -759,20 +1039,23 @@ function openWorkspaceNoteEditor() {
     ) {
         window.openNoteEditor();
 
-        window.requestAnimationFrame(() => {
-            setWorkspaceEditorProject(
-                "noteEditorProject",
-                projectId
-            );
-        });
+        window.requestAnimationFrame(
+            () => {
+                setWorkspaceEditorProject(
+                    "noteEditorProject",
+                    projectId
+                );
+            }
+        );
 
         return;
     }
 
     if (
         window.NoteModal &&
-        typeof window.NoteModal.openCreate ===
-        "function"
+        typeof window.NoteModal
+            .openCreate ===
+            "function"
     ) {
         window.NoteModal.openCreate({
             projectId
@@ -782,8 +1065,9 @@ function openWorkspaceNoteEditor() {
 
     if (
         window.NotesModal &&
-        typeof window.NotesModal.openCreate ===
-        "function"
+        typeof window.NotesModal
+            .openCreate ===
+            "function"
     ) {
         window.NotesModal.openCreate({
             projectId
@@ -815,20 +1099,23 @@ function openWorkspaceFileEditor() {
     ) {
         window.openFileEditor();
 
-        window.requestAnimationFrame(() => {
-            setWorkspaceEditorProject(
-                "fileEditorProject",
-                projectId
-            );
-        });
+        window.requestAnimationFrame(
+            () => {
+                setWorkspaceEditorProject(
+                    "fileEditorProject",
+                    projectId
+                );
+            }
+        );
 
         return;
     }
 
     if (
         window.FileModal &&
-        typeof window.FileModal.openCreate ===
-        "function"
+        typeof window.FileModal
+            .openCreate ===
+            "function"
     ) {
         window.FileModal.openCreate({
             projectId
@@ -838,8 +1125,9 @@ function openWorkspaceFileEditor() {
 
     if (
         window.FilesModal &&
-        typeof window.FilesModal.openCreate ===
-        "function"
+        typeof window.FilesModal
+            .openCreate ===
+            "function"
     ) {
         window.FilesModal.openCreate({
             projectId
@@ -862,17 +1150,22 @@ function initializeProjectWorkspace() {
             "addWorkspaceTaskButton"
         );
 
-    if (addTaskButton) {
+    if (
+        addTaskButton &&
+        addTaskButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        addTaskButton.dataset
+            .workspaceInitialized =
+            "true";
+
         addTaskButton.addEventListener(
             "click",
             function (event) {
                 event.preventDefault();
                 openWorkspaceTaskEditor();
             }
-        );
-    } else {
-        console.error(
-            "Add Workspace Task button was not found."
         );
     }
 
@@ -881,7 +1174,16 @@ function initializeProjectWorkspace() {
             "addWorkspaceNoteButton"
         );
 
-    if (addNoteButton) {
+    if (
+        addNoteButton &&
+        addNoteButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        addNoteButton.dataset
+            .workspaceInitialized =
+            "true";
+
         addNoteButton.addEventListener(
             "click",
             function (event) {
@@ -896,7 +1198,16 @@ function initializeProjectWorkspace() {
             "addWorkspaceFileButton"
         );
 
-    if (addFileButton) {
+    if (
+        addFileButton &&
+        addFileButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        addFileButton.dataset
+            .workspaceInitialized =
+            "true";
+
         addFileButton.addEventListener(
             "click",
             function (event) {
@@ -911,7 +1222,16 @@ function initializeProjectWorkspace() {
             "addWorkspaceEventButton"
         );
 
-    if (addEventButton) {
+    if (
+        addEventButton &&
+        addEventButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        addEventButton.dataset
+            .workspaceInitialized =
+            "true";
+
         addEventButton.addEventListener(
             "click",
             function (event) {
@@ -937,15 +1257,14 @@ function initializeProjectWorkspace() {
                     return;
                 }
 
-                window.openEventModal(null, {
-                    projectId:
-                        currentWorkspaceProject.id
-                });
+                window.openEventModal(
+                    null,
+                    {
+                        projectId:
+                            currentWorkspaceProject.id
+                    }
+                );
             }
-        );
-    } else {
-        console.error(
-            "Add Workspace Event button was not found."
         );
     }
 
@@ -954,7 +1273,16 @@ function initializeProjectWorkspace() {
             "backToProjectsButton"
         );
 
-    if (backButton) {
+    if (
+        backButton &&
+        backButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        backButton.dataset
+            .workspaceInitialized =
+            "true";
+
         backButton.addEventListener(
             "click",
             function (event) {
@@ -969,20 +1297,47 @@ function initializeProjectWorkspace() {
             "editWorkspaceProjectButton"
         );
 
-    if (editButton) {
+    if (
+        editButton &&
+        editButton.dataset
+            .workspaceInitialized !==
+            "true"
+    ) {
+        editButton.dataset
+            .workspaceInitialized =
+            "true";
+
         editButton.addEventListener(
             "click",
             function () {
                 if (
-                    currentWorkspaceProject &&
+                    !currentWorkspaceProject
+                ) {
+                    return;
+                }
+
+                if (
+                    typeof window
+                        .openProjectModal ===
+                    "function"
+                ) {
+                    window.openProjectModal(
+                        currentWorkspaceProject
+                    );
+                    return;
+                }
+
+                if (
                     window.ProjectModal &&
-                    typeof window.ProjectModal
+                    typeof window
+                        .ProjectModal
                         .openEdit ===
                         "function"
                 ) {
-                    window.ProjectModal.openEdit(
-                        currentWorkspaceProject.id
-                    );
+                    window.ProjectModal
+                        .openEdit(
+                            currentWorkspaceProject.id
+                        );
                 }
             }
         );
@@ -1005,6 +1360,27 @@ document.addEventListener(
     function () {
         if (currentWorkspaceProject) {
             renderWorkspaceEvents();
+        }
+    }
+);
+
+document.addEventListener(
+    "harmonia:projects-updated",
+    function () {
+        if (!currentWorkspaceProject) {
+            return;
+        }
+
+        const updatedProject =
+            window.ProjectManager
+                ?.getProjectById?.(
+                    currentWorkspaceProject.id
+                );
+
+        if (updatedProject) {
+            openProjectWorkspace(
+                updatedProject.id
+            );
         }
     }
 );
@@ -1035,3 +1411,11 @@ window.openWorkspaceNoteEditor =
 
 window.openWorkspaceFileEditor =
     openWorkspaceFileEditor;
+
+console.log(
+    "✅ Project Workspace Ready"
+);
+
+document.addEventListener("harmonia:notes-updated",()=>{if(currentWorkspaceProject)renderWorkspaceNotes();});
+document.addEventListener("harmonia:files-updated",()=>{if(currentWorkspaceProject)renderWorkspaceFiles();});
+window.renderWorkspaceNotes=renderWorkspaceNotes;window.renderWorkspaceFiles=renderWorkspaceFiles;

@@ -267,7 +267,7 @@ function buildEventData() {
     };
 }
 
-function saveEventFromModal() {
+async function saveEventFromModal() {
     const eventData = buildEventData();
 
     if (!eventData) {
@@ -281,7 +281,7 @@ function saveEventFromModal() {
             typeof window.HarmoniaEvents.update ===
                 "function"
         ) {
-            window.HarmoniaEvents.update(
+            await window.HarmoniaEvents.update(
                 editingEventId,
                 eventData
             );
@@ -290,7 +290,7 @@ function saveEventFromModal() {
             typeof window.HarmoniaEvents.add ===
                 "function"
         ) {
-            window.HarmoniaEvents.add(
+            await window.HarmoniaEvents.add(
                 eventData
             );
         } else {

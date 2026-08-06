@@ -1,217 +1,255 @@
-const pageTitles = {
-    dashboard: "Dashboard",
-    homepage: "Homepage",
-    about: "About",
-    connect: "Connect",
-    projects: "Projects",
-    work: "Work",
-    events: "Events",
-    gallery: "Gallery",
-    partners: "Partners",
-    messages: "Messages",
-    donations: "Donations",
-    analytics: "Analytics",
-    ai: "Harmonia AI",
-    "project-workspace": "Project Workspace"
-};
+(function () {
+    "use strict";
 
-function openAdminPage(pageId) {
-    console.log("Opening admin page:", pageId);
+    const pageTitles = {
+        dashboard: "Dashboard",
+        homepage: "Homepage",
+        about: "About",
+        connect: "Connect",
+        projects: "Projects",
+        work: "Work",
+        events: "Events",
+        notes: "Notes",
+        files: "Files",
+        gallery: "Gallery",
+        partners: "Partners",
+        messages: "Messages",
+        finance: "Finance",
+        analytics: "Analytics",
+        marketing: "Marketing",
+        "project-workspace":
+            "Project Workspace"
+    };
 
-    const targetPage =
-        document.getElementById(pageId);
+    const pageRenderers = {
+        dashboard: "renderDashboard",
+        projects: "renderProjectsPage",
+        work: "renderWorkPage",
+        events: "renderEventsPage",
+        notes: "renderNotesPage",
+        files: "renderFilesPage",
+        gallery: "renderGallery",
+        partners: "renderPartners",
+        messages: "renderMessages",
+        finance: "renderFinance",
+        analytics: "renderAnalytics",
+        marketing: "renderMarketing"
+    };
 
-    if (!targetPage) {
-        console.warn(`Page not found: ${pageId}`);
-        return;
+    let initialized = false;
+
+    function refreshPage(pageId) {
+        const rendererName =
+            pageRenderers[pageId];
+
+        const renderer =
+            rendererName
+                ? window[rendererName]
+                : null;
+
+        if (
+            typeof renderer ===
+            "function"
+        ) {
+            try {
+                renderer();
+            } catch (error) {
+                console.error(
+                    `Could not render ${pageId}:`,
+                    error
+                );
+            }
+        }
     }
 
-    /*
-     * Reset every main admin page.
-     *
-     * This removes both:
-     * 1. The active class
-     * 2. Any hidden attribute accidentally added earlier
-     */
-    document
-        .querySelectorAll(".admin-page")
-        .forEach((page) => {
-            page.classList.remove("active");
-            page.hidden = true;
-        });
-
-    /*
-     * Display only the requested page.
-     */
-    targetPage.hidden = false;
-    targetPage.classList.add("active");
-
-    /*
-     * Update sidebar navigation.
-     */
-    document
-        .querySelectorAll(".nav-button")
-        .forEach((button) => {
-            const isCurrentPage =
-                button.dataset.page === pageId;
-
-            button.classList.toggle(
-                "active",
-                isCurrentPage
+    function openAdminPage(
+        pageId,
+        options = {}
+    ) {
+        const targetPage =
+            document.getElementById(
+                pageId
             );
-        });
 
-    /*
-     * Update the heading at the top of the admin area.
-     */
-    const pageTitle =
-        document.getElementById("pageTitle");
+        if (
+            !targetPage ||
+            !targetPage.classList.contains(
+                "admin-page"
+            )
+        ) {
+            console.warn(
+                `Page not found: ${pageId}`
+            );
+            return false;
+        }
 
-    if (pageTitle) {
-        pageTitle.textContent =
-            pageTitles[pageId] ||
-            "Harmonia HQ";
-    }
+        document
+            .querySelectorAll(
+                ".admin-page"
+            )
+            .forEach(page => {
+                const active =
+                    page === targetPage;
 
-    /*
-     * Refresh page-specific content.
-     */
-    if (
-        pageId === "work" &&
-        typeof window.renderWorkPage === "function"
-    ) {
-        window.renderWorkPage();
-    }
+                page.classList.toggle(
+                    "active",
+                    active
+                );
 
-    if (
-        pageId === "events" &&
-        typeof window.renderEventsPage === "function"
-    ) {
-        window.renderEventsPage();
-    }
+                page.hidden =
+                    !active;
 
-    if (
-        pageId === "projects" &&
-        typeof window.renderProjectsPage === "function"
-    ) {
-        window.renderProjectsPage();
-    }
+                page.setAttribute(
+                    "aria-hidden",
+                    String(!active)
+                );
+            });
 
-    /*
-     * Update the browser URL without causing
-     * another navigation event.
-     */
-    if (window.location.hash !== `#${pageId}`) {
-        window.history.replaceState(
-            null,
-            "",
-            `#${pageId}`
+        document
+            .querySelectorAll(
+                ".nav-button[data-page]"
+            )
+            .forEach(button => {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.page ===
+                        pageId
+                );
+            });
+
+        const title =
+            document.getElementById(
+                "pageTitle"
+            );
+
+        if (title) {
+            title.textContent =
+                pageTitles[pageId] ||
+                "Harmonia HQ";
+        }
+
+        if (
+            options.refresh !== false
+        ) {
+            refreshPage(pageId);
+        }
+
+        if (
+            options.updateHash !==
+                false &&
+            window.location.hash !==
+                `#${pageId}`
+        ) {
+            window.history.replaceState(
+                null,
+                "",
+                `#${pageId}`
+            );
+        }
+
+        document.dispatchEvent(
+            new CustomEvent(
+                "harmonia:page-opened",
+                {
+                    detail: {
+                        pageId
+                    }
+                }
+            )
         );
+
+        return true;
     }
-}
 
-function initializeRouter() {
-    console.log("Initializing Router");
-
-    document
-        .querySelectorAll(".nav-button[data-page]")
-        .forEach((button) => {
-            button.addEventListener(
-                "click",
-                function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    const pageId =
-                        button.dataset.page;
-
-                    if (!pageId) {
-                        console.warn(
-                            "Navigation button has no data-page value."
-                        );
-                        return;
-                    }
-
-                    openAdminPage(pageId);
-                }
-            );
-        });
-
-    /*
-     * Support links elsewhere in the application
-     * that also use data-page but are not sidebar buttons.
-     */
-    document
-        .querySelectorAll(
-            "[data-page]:not(.nav-button)"
-        )
-        .forEach((element) => {
-            element.addEventListener(
-                "click",
-                function (event) {
-                    const pageId =
-                        element.dataset.page;
-
-                    if (!pageId) {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    openAdminPage(pageId);
-                }
-            );
-        });
-
-    const requestedPage =
-        window.location.hash
-            .replace("#", "")
-            .trim();
-
-    const requestedElement =
-        requestedPage
-            ? document.getElementById(
-                  requestedPage
-              )
-            : null;
-
-    const initialPage =
-        requestedElement &&
-        requestedElement.classList.contains(
-            "admin-page"
-        )
-            ? requestedPage
-            : "dashboard";
-
-    openAdminPage(initialPage);
-
-    console.log(
-        "Router initialization complete."
-    );
-}
-
-window.addEventListener(
-    "hashchange",
-    function () {
-        const pageId =
+    function getRequestedPage() {
+        const requested =
             window.location.hash
                 .replace("#", "")
                 .trim();
 
-        const page =
-            document.getElementById(pageId);
+        const element =
+            requested
+                ? document.getElementById(
+                    requested
+                )
+                : null;
 
-        if (
-            page &&
-            page.classList.contains(
+        return (
+            element &&
+            element.classList.contains(
                 "admin-page"
             )
-        ) {
-            openAdminPage(pageId);
-        }
+        )
+            ? requested
+            : "dashboard";
     }
-);
 
-window.openAdminPage = openAdminPage;
-window.initializeRouter = initializeRouter;
+    function initializeRouter() {
+        if (initialized) {
+            openAdminPage(
+                getRequestedPage()
+            );
+            return;
+        }
 
-console.log("✅ Router Loaded");
+        initialized = true;
+
+        document.addEventListener(
+            "click",
+            event => {
+                const trigger =
+                    event.target.closest(
+                        "[data-page]"
+                    );
+
+                if (!trigger) {
+                    return;
+                }
+
+                const pageId =
+                    trigger.dataset.page;
+
+                if (!pageId) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                openAdminPage(pageId);
+            }
+        );
+
+        window.addEventListener(
+            "hashchange",
+            () => {
+                openAdminPage(
+                    getRequestedPage(),
+                    {
+                        updateHash: false
+                    }
+                );
+            }
+        );
+
+        openAdminPage(
+            getRequestedPage()
+        );
+
+        console.log(
+            "✅ Router initialized"
+        );
+    }
+
+    window.openAdminPage =
+        openAdminPage;
+
+    window.initializeRouter =
+        initializeRouter;
+
+    window.refreshAdminPage =
+        refreshPage;
+
+    console.log(
+        "✅ Router Loaded"
+    );
+})();

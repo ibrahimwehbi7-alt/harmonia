@@ -335,3 +335,7 @@ if (document.readyState === "loading") {
 } else {
     initializeFilesPage();
 }
+
+document.addEventListener("harmonia:files-updated", () => {
+    if (typeof window.renderFiles === "function") window.renderFiles();
+});

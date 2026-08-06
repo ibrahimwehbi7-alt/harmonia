@@ -1,275 +1,851 @@
-const WORK_STORAGE_KEY = "harmonia_work";
-const WORK_UPDATED_EVENT = "harmonia:work-updated";
+console.log("Loading Railway Work Manager");
 
-function createWorkId() {
-    if (
-        window.crypto &&
-        typeof window.crypto.randomUUID === "function"
-    ) {
-        return window.crypto.randomUUID();
-    }
+const HARMONIA_WORK_API_URL =
+    "https://harmonia-production-720f.up.railway.app";
 
-    return `work-${Date.now()}-${Math.random()
-        .toString(16)
-        .slice(2)}`;
+const WORK_UPDATED_EVENT =
+    "harmonia:work-updated";
+
+let railwayWorkItems = [];
+let workLoadingPromise = null;
+
+function getWorkAuthToken() {
+    return (
+        localStorage.getItem(
+            "harmonia_access_token"
+        ) ||
+        localStorage.getItem(
+            "accessToken"
+        ) ||
+        localStorage.getItem(
+            "token"
+        ) ||
+        sessionStorage.getItem(
+            "harmonia_access_token"
+        ) ||
+        sessionStorage.getItem(
+            "accessToken"
+        ) ||
+        sessionStorage.getItem(
+            "token"
+        ) ||
+        ""
+    );
 }
 
-function normalizeWorkItem(workData = {}) {
-    const now = new Date().toISOString();
+async function workApiRequest(
+    path,
+    options = {}
+) {
+    const controller =
+        new AbortController();
 
+    const timeoutId =
+        window.setTimeout(
+            () => controller.abort(),
+            20000
+        );
+
+    const token =
+        getWorkAuthToken();
+
+    const headers = {
+        Accept: "application/json",
+        ...(options.body
+            ? {
+                  "Content-Type":
+                      "application/json"
+              }
+            : {}),
+        ...(token
+            ? {
+                  Authorization:
+                      `Bearer ${token}`
+              }
+            : {}),
+        ...(options.headers || {})
+    };
+
+    try {
+        const response =
+            await fetch(
+                `${HARMONIA_WORK_API_URL}${path}`,
+                {
+                    ...options,
+                    headers,
+                    signal:
+                        controller.signal
+                }
+            );
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+        let body = null;
+
+        if (
+            contentType.includes(
+                "application/json"
+            )
+        ) {
+            body =
+                await response.json();
+        } else {
+            const text =
+                await response.text();
+
+            body =
+                text || null;
+        }
+
+        if (!response.ok) {
+            const message =
+                body?.message?.message ||
+                body?.message ||
+                body?.error ||
+                (
+                    typeof body ===
+                    "string"
+                        ? body
+                        : ""
+                ) ||
+                `Request failed with status ${response.status}.`;
+
+            throw new Error(message);
+        }
+
+        return body;
+    } catch (error) {
+        if (
+            error?.name ===
+            "AbortError"
+        ) {
+            throw new Error(
+                "The Railway request timed out."
+            );
+        }
+
+        throw error;
+    } finally {
+        window.clearTimeout(
+            timeoutId
+        );
+    }
+}
+
+function normalizeFrontendStatus(
+    value
+) {
+    const normalized =
+        String(value || "")
+            .trim()
+            .toUpperCase()
+            .replaceAll("-", "_")
+            .replaceAll(" ", "_");
+
+    const statusMap = {
+        BACKLOG: "backlog",
+        TODO: "todo",
+        TO_DO: "todo",
+        IN_PROGRESS: "in-progress",
+        WAITING: "waiting",
+        BLOCKED: "waiting",
+        COMPLETED: "completed",
+        COMPLETE: "completed",
+        DONE: "completed"
+    };
+
+    return (
+        statusMap[normalized] ||
+        "todo"
+    );
+}
+
+function normalizeApiStatus(value) {
+    const statusMap = {
+        backlog: "BACKLOG",
+        todo: "TODO",
+        "in-progress":
+            "IN_PROGRESS",
+        waiting: "WAITING",
+        completed: "COMPLETED"
+    };
+
+    return (
+        statusMap[
+            String(value || "")
+                .toLowerCase()
+        ] ||
+        "TODO"
+    );
+}
+
+function normalizeFrontendPriority(
+    value
+) {
+    const normalized =
+        String(value || "")
+            .trim()
+            .toLowerCase();
+
+    return [
+        "low",
+        "medium",
+        "high",
+        "urgent"
+    ].includes(normalized)
+        ? normalized
+        : "medium";
+}
+
+function normalizeApiPriority(
+    value
+) {
+    return normalizeFrontendPriority(
+        value
+    ).toUpperCase();
+}
+
+function normalizeDueDate(value) {
+    if (!value) {
+        return "";
+    }
+
+    const date =
+        new Date(value);
+
+    if (
+        Number.isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value).slice(
+            0,
+            10
+        );
+    }
+
+    return date
+        .toISOString()
+        .slice(0, 10);
+}
+
+function buildAssigneeName(task) {
+    const assignedTo =
+        task.assignedTo;
+
+    if (!assignedTo) {
+        return "";
+    }
+
+    const fullName = [
+        assignedTo.firstName,
+        assignedTo.lastName
+    ]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+    return (
+        fullName ||
+        assignedTo.email ||
+        ""
+    );
+}
+
+function normalizeWorkItem(
+    task = {}
+) {
     return {
-        id: workData.id || createWorkId(),
-        title: String(workData.title || "Untitled Work").trim(),
-        description: String(workData.description || "").trim(),
-        assignee: String(workData.assignee || "").trim(),
-        status: [
-            "backlog",
-            "todo",
-            "in-progress",
-            "waiting",
-            "completed"
-        ].includes(workData.status)
-            ? workData.status
-            : "todo",
-        priority: [
-            "low",
-            "medium",
-            "high",
-            "urgent"
-        ].includes(workData.priority)
-            ? workData.priority
-            : "medium",
-        dueDate: String(workData.dueDate || "").trim(),
-        projectId: workData.projectId || null,
-        notes: String(workData.notes || "").trim(),
+        id:
+            String(
+                task.id || ""
+            ),
+
+        title:
+            task.title ||
+            task.name ||
+            "Untitled Work",
+
+        description:
+            task.description ||
+            "",
+
+        assignee:
+            task.assignee ||
+            buildAssigneeName(
+                task
+            ),
+
+        assignedToId:
+            task.assignedToId ||
+            null,
+
+        status:
+            normalizeFrontendStatus(
+                task.status
+            ),
+
+        priority:
+            normalizeFrontendPriority(
+                task.priority
+            ),
+
+        dueDate:
+            normalizeDueDate(
+                task.dueDate
+            ),
+
+        projectId:
+            task.projectId ||
+            null,
+
+        notes:
+            task.notes ||
+            "",
+
         completedAt:
-            workData.status === "completed"
-                ? workData.completedAt || now
-                : null,
-        createdAt: workData.createdAt || now,
-        updatedAt: workData.updatedAt || now
+            task.completedAt ||
+            null,
+
+        createdAt:
+            task.createdAt ||
+            new Date()
+                .toISOString(),
+
+        updatedAt:
+            task.updatedAt ||
+            task.createdAt ||
+            new Date()
+                .toISOString(),
+
+        project:
+            task.project ||
+            null,
+
+        assignedTo:
+            task.assignedTo ||
+            null,
+
+        createdBy:
+            task.createdBy ||
+            null
     };
 }
 
-function loadWork() {
-    try {
-        const storedWork =
-            localStorage.getItem(WORK_STORAGE_KEY);
-
-        if (!storedWork) {
-            return [];
-        }
-
-        const parsedWork = JSON.parse(storedWork);
-
-        return Array.isArray(parsedWork)
-            ? parsedWork.map(normalizeWorkItem)
-            : [];
-    } catch (error) {
-        console.error("Could not load work:", error);
-        return [];
-    }
-}
-
-function saveWork(workItems) {
-    try {
-        localStorage.setItem(
-            WORK_STORAGE_KEY,
-            JSON.stringify(workItems)
-        );
-
-        document.dispatchEvent(
-            new CustomEvent(WORK_UPDATED_EVENT)
-        );
-
-        return true;
-    } catch (error) {
-        console.error("Could not save work:", error);
-        return false;
-    }
+function dispatchWorkUpdated() {
+    document.dispatchEvent(
+        new CustomEvent(
+            WORK_UPDATED_EVENT,
+            {
+                detail: {
+                    items:
+                        getAllWork()
+                }
+            }
+        )
+    );
 }
 
 function getAllWork() {
-    return loadWork();
+    return [
+        ...railwayWorkItems
+    ];
 }
 
 function getWorkById(workId) {
     return (
-        loadWork().find(item => item.id === workId) ||
+        railwayWorkItems.find(
+            item =>
+                String(item.id) ===
+                String(workId)
+        ) ||
         null
     );
 }
 
-function createWork(workData) {
-    const workItems = loadWork();
-    const newWorkItem = normalizeWorkItem({
-        ...workData,
-        id: createWorkId()
-    });
-
-    workItems.unshift(newWorkItem);
-
-    if (!saveWork(workItems)) {
-        throw new Error("Could not save the work item.");
-    }
-
-    return newWorkItem;
+function getWorkByProjectId(
+    projectId
+) {
+    return railwayWorkItems.filter(
+        item =>
+            String(
+                item.projectId ||
+                ""
+            ) ===
+            String(
+                projectId ||
+                ""
+            )
+    );
 }
 
-function updateWork(workId, updates) {
-    const workItems = loadWork();
-    const workIndex = workItems.findIndex(
-        item => item.id === workId
+function getWorkByStatus(
+    status
+) {
+    return railwayWorkItems.filter(
+        item =>
+            item.status ===
+            status
     );
-
-    if (workIndex === -1) {
-        return null;
-    }
-
-    const currentItem = workItems[workIndex];
-    const nextStatus =
-        updates.status || currentItem.status;
-
-    workItems[workIndex] = normalizeWorkItem({
-        ...currentItem,
-        ...updates,
-        id: currentItem.id,
-        createdAt: currentItem.createdAt,
-        completedAt:
-            nextStatus === "completed"
-                ? currentItem.completedAt ||
-                  new Date().toISOString()
-                : null,
-        updatedAt: new Date().toISOString()
-    });
-
-    if (!saveWork(workItems)) {
-        throw new Error("Could not update the work item.");
-    }
-
-    return workItems[workIndex];
 }
 
-function deleteWork(workId) {
-    const workItems = loadWork();
-    const remainingWork = workItems.filter(
-        item => item.id !== workId
+function getActiveWork() {
+    return railwayWorkItems.filter(
+        item =>
+            item.status !==
+            "completed"
+    );
+}
+
+function getCompletedWork() {
+    return getWorkByStatus(
+        "completed"
+    );
+}
+
+async function loadWork(
+    options = {}
+) {
+    if (
+        workLoadingPromise &&
+        !options.force
+    ) {
+        return workLoadingPromise;
+    }
+
+    workLoadingPromise =
+        (async () => {
+            const response =
+                await workApiRequest(
+                    "/tasks",
+                    {
+                        method:
+                            "GET"
+                    }
+                );
+
+            const rawItems =
+                Array.isArray(
+                    response
+                )
+                    ? response
+                    : Array.isArray(
+                          response?.tasks
+                      )
+                        ? response.tasks
+                        : Array.isArray(
+                              response?.data
+                          )
+                            ? response.data
+                            : [];
+
+            railwayWorkItems =
+                rawItems.map(
+                    normalizeWorkItem
+                );
+
+            dispatchWorkUpdated();
+
+            console.log(
+                `✅ Loaded ${railwayWorkItems.length} work items from Railway`
+            );
+
+            return getAllWork();
+        })();
+
+    try {
+        return await workLoadingPromise;
+    } finally {
+        workLoadingPromise =
+            null;
+    }
+}
+
+function buildTaskPayload(
+    workData = {},
+    options = {}
+) {
+    const payload = {};
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "title"
+            )
+    ) {
+        payload.title =
+            String(
+                workData.title ||
+                ""
+            ).trim();
+    }
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "description"
+            )
+    ) {
+        payload.description =
+            String(
+                workData.description ||
+                ""
+            ).trim();
+    }
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "status"
+            )
+    ) {
+        payload.status =
+            normalizeApiStatus(
+                workData.status
+            );
+    }
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "priority"
+            )
+    ) {
+        payload.priority =
+            normalizeApiPriority(
+                workData.priority
+            );
+    }
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "projectId"
+            )
+    ) {
+        payload.projectId =
+            workData.projectId ||
+            null;
+    }
+
+    if (
+        options.isCreate ||
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "dueDate"
+            )
+    ) {
+        payload.dueDate =
+            workData.dueDate
+                ? new Date(
+                      `${workData.dueDate}T12:00:00`
+                  ).toISOString()
+                : null;
+    }
+
+    if (
+        Object.prototype
+            .hasOwnProperty.call(
+                workData,
+                "assignedToId"
+            )
+    ) {
+        payload.assignedToId =
+            workData.assignedToId ||
+            null;
+    }
+
+    return payload;
+}
+
+async function createWork(
+    workData
+) {
+    const payload =
+        buildTaskPayload(
+            workData,
+            {
+                isCreate: true
+            }
+        );
+
+    if (!payload.title) {
+        throw new Error(
+            "A task title is required."
+        );
+    }
+
+    if (!payload.projectId) {
+        throw new Error(
+            "Railway tasks must be connected to a project."
+        );
+    }
+
+    const created =
+        await workApiRequest(
+            "/tasks",
+            {
+                method: "POST",
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+            }
+        );
+
+    const normalized =
+        normalizeWorkItem(
+            created
+        );
+
+    railwayWorkItems = [
+        normalized,
+        ...railwayWorkItems.filter(
+            item =>
+                item.id !==
+                normalized.id
+        )
+    ];
+
+    dispatchWorkUpdated();
+
+    return normalized;
+}
+
+async function updateWork(
+    workId,
+    updates
+) {
+    const existing =
+        getWorkById(workId);
+
+    if (!existing) {
+        throw new Error(
+            "The work item could not be found."
+        );
+    }
+
+    const payload =
+        buildTaskPayload(
+            updates
+        );
+
+    const updated =
+        await workApiRequest(
+            `/tasks/${encodeURIComponent(
+                workId
+            )}`,
+            {
+                method: "PATCH",
+                body:
+                    JSON.stringify(
+                        payload
+                    )
+            }
+        );
+
+    const normalized =
+        normalizeWorkItem(
+            updated
+        );
+
+    railwayWorkItems =
+        railwayWorkItems.map(
+            item =>
+                item.id ===
+                normalized.id
+                    ? normalized
+                    : item
+        );
+
+    dispatchWorkUpdated();
+
+    return normalized;
+}
+
+async function deleteWork(
+    workId
+) {
+    await workApiRequest(
+        `/tasks/${encodeURIComponent(
+            workId
+        )}`,
+        {
+            method: "DELETE"
+        }
     );
 
-    if (remainingWork.length === workItems.length) {
-        return false;
-    }
+    railwayWorkItems =
+        railwayWorkItems.filter(
+            item =>
+                String(item.id) !==
+                String(workId)
+        );
 
-    if (!saveWork(remainingWork)) {
-        throw new Error("Could not delete the work item.");
-    }
+    dispatchWorkUpdated();
 
     return true;
 }
 
-function toggleWorkComplete(workId) {
-    const item = getWorkById(workId);
+async function toggleWorkComplete(
+    workId
+) {
+    const item =
+        getWorkById(workId);
 
     if (!item) {
         return null;
     }
 
-    return updateWork(workId, {
-        status:
-            item.status === "completed"
-                ? "todo"
-                : "completed"
-    });
+    return updateWork(
+        workId,
+        {
+            status:
+                item.status ===
+                "completed"
+                    ? "todo"
+                    : "completed"
+        }
+    );
 }
 
-function duplicateWork(workId) {
-    const item = getWorkById(workId);
+async function duplicateWork(
+    workId
+) {
+    const item =
+        getWorkById(workId);
 
     if (!item) {
         return null;
     }
 
     return createWork({
-        ...item,
-        id: undefined,
-        title: `${item.title} Copy`,
-        status: "todo",
-        completedAt: null,
-        createdAt: undefined,
-        updatedAt: undefined
+        title:
+            `${item.title} Copy`,
+
+        description:
+            item.description,
+
+        status:
+            "todo",
+
+        priority:
+            item.priority,
+
+        dueDate:
+            item.dueDate,
+
+        projectId:
+            item.projectId,
+
+        assignedToId:
+            item.assignedToId
     });
 }
 
-window.HarmoniaWork = {
-    load: getAllWork,
-    getAll: getAllWork,
-    getById: getWorkById,
-    getByProjectId: getWorkByProjectId,
-    create: createWork,
-    update: updateWork,
-    delete: deleteWork,
-    toggleComplete: toggleWorkComplete,
-    duplicate: duplicateWork
-};
+async function testWorkConnection() {
+    try {
+        const items =
+            await loadWork({
+                force: true
+            });
 
-console.log("✅ Work Manager v2 Loaded");
+        return {
+            connected: true,
+            items
+        };
+    } catch (error) {
+        console.error(
+            "Railway Work connection failed:",
+            error
+        );
 
-/*
- * Legacy compatibility layer
- * --------------------------
- * Older Harmonia modules, including Project Workspace, use
- * window.WorkManager.getAllWork(). The redesigned Work module
- * uses window.HarmoniaWork. Keep both APIs available so all
- * existing pages can communicate with the same work records.
- */
-function getWorkByProjectId(projectId) {
-    return loadWork().filter(item => {
-        return String(item.projectId || "") ===
-            String(projectId || "");
-    });
+        return {
+            connected: false,
+            error
+        };
+    }
 }
 
-function getWorkByStatus(status) {
-    return loadWork().filter(item => {
-        return item.status === status;
-    });
-}
+const HarmoniaWorkApi = {
+    load:
+        loadWork,
 
-function getActiveWork() {
-    return loadWork().filter(item => {
-        return item.status !== "completed";
-    });
-}
-
-function getCompletedWork() {
-    return getWorkByStatus("completed");
-}
-
-window.WorkManager = {
     loadWork,
-    saveWork,
+
+    getAll:
+        getAllWork,
+
     getAllWork,
+
+    getById:
+        getWorkById,
+
     getWorkById,
+
+    getByProjectId:
+        getWorkByProjectId,
+
     getWorkByProjectId,
+
+    getByStatus:
+        getWorkByStatus,
+
     getWorkByStatus,
+
     getActiveWork,
+
     getCompletedWork,
+
+    create:
+        createWork,
+
     createWork,
+
+    update:
+        updateWork,
+
     updateWork,
+
+    delete:
+        deleteWork,
+
     deleteWork,
+
+    toggleComplete:
+        toggleWorkComplete,
+
     toggleWorkComplete,
+
+    duplicate:
+        duplicateWork,
+
     duplicateWork,
 
-    // Short aliases used by newer modules.
-    load: getAllWork,
-    getAll: getAllWork,
-    getById: getWorkById,
-    getByProjectId: getWorkByProjectId,
-    create: createWork,
-    update: updateWork,
-    delete: deleteWork,
-    toggleComplete: toggleWorkComplete,
-    duplicate: duplicateWork
+    testConnection:
+        testWorkConnection
 };
 
-console.log("✅ WorkManager compatibility API loaded");
+window.HarmoniaWork =
+    HarmoniaWorkApi;
+
+window.WorkManager =
+    HarmoniaWorkApi;
+
+console.log(
+    "✅ Railway Work Manager Loaded"
+);

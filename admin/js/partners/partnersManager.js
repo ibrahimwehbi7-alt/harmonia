@@ -1,105 +1,26 @@
-const PARTNERS_STORAGE_KEY = "harmonia_partners";
+(function () {
+    "use strict";
 
-function loadPartners() {
-    try {
-        const savedItems = localStorage.getItem(PARTNERS_STORAGE_KEY);
-        if (!savedItems) return [];
-        const parsedItems = JSON.parse(savedItems);
-        return Array.isArray(parsedItems) ? parsedItems : [];
-    } catch (error) {
-        console.error("Could not load partners:", error);
-        return [];
+    const DEFAULT_ORGANIZATION_ID = "cms9eoh7c0000prxue4fvntqp";
+    function api() {
+        if (!window.HarmoniaApi) throw new Error("Harmonia API is unavailable.");
+        return window.HarmoniaApi;
     }
-}
-
-function savePartners(items) {
-    localStorage.setItem(PARTNERS_STORAGE_KEY, JSON.stringify(items));
-    document.dispatchEvent(new CustomEvent("harmonia:partners-updated"));
-}
-
-function createPartnersId() {
-    if (window.crypto && typeof window.crypto.randomUUID === "function") {
-        return window.crypto.randomUUID();
+    function organizationId() {
+        return api().getOrganizationId() || DEFAULT_ORGANIZATION_ID;
+    }
+    function notify(name, detail = {}) {
+        document.dispatchEvent(new CustomEvent(name, { detail }));
     }
 
-    return `partners-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function normalizePartnersItem(data = {}) {
-    const timestamp = new Date().toISOString();
-
-    return {
-        id: data.id || createPartnersId(),
-
-        name: String(data.name || "").trim(),
-        type: String(data.type || "community").trim(),
-        status: String(data.status || "prospect").trim(),
-        contactName: String(data.contactName || "").trim(),
-        contactEmail: String(data.contactEmail || "").trim(),
-        phone: String(data.phone || "").trim(),
-        website: String(data.website || "").trim(),
-        location: String(data.location || "").trim(),
-        nextStep: String(data.nextStep || "").trim(),
-        followUpDate: String(data.followUpDate || "").trim(),
-        notes: String(data.notes || "").trim(),
-
-        createdAt: data.createdAt || timestamp,
-        updatedAt: timestamp
-    };
-}
-
-function getAllPartnersItems() {
-    return loadPartners();
-}
-
-function getPartnersItemById(itemId) {
-    return loadPartners().find((item) => item.id === itemId) || null;
-}
-
-function createPartnersItem(data) {
-    const items = loadPartners();
-    const newItem = normalizePartnersItem(data);
-    items.unshift(newItem);
-    savePartners(items);
-    return newItem;
-}
-
-function updatePartnersItem(itemId, data) {
-    const items = loadPartners();
-    const itemIndex = items.findIndex((item) => item.id === itemId);
-
-    if (itemIndex === -1) return null;
-
-    const currentItem = items[itemIndex];
-    const updatedItem = normalizePartnersItem({
-        ...currentItem,
-        ...data,
-        id: currentItem.id,
-        createdAt: currentItem.createdAt
-    });
-
-    items[itemIndex] = updatedItem;
-    savePartners(items);
-    return updatedItem;
-}
-
-function deletePartnersItem(itemId) {
-    const items = loadPartners();
-    const filteredItems = items.filter((item) => item.id !== itemId);
-
-    if (filteredItems.length === items.length) return false;
-
-    savePartners(filteredItems);
-    return true;
-}
-
-window.HarmoniaPartners = {
-    load: getAllPartnersItems,
-    getAll: getAllPartnersItems,
-    getById: getPartnersItemById,
-    create: createPartnersItem,
-    update: updatePartnersItem,
-    delete: deletePartnersItem
-};
-
-console.log("✅ Partners Manager Loaded");
+    let items=[];let loadingPromise=null;
+    function normalize(x){return { ...x, type:String(x.sector||'other').toLowerCase(), status:x.status||'active', contactName:x.contactName||'', contactEmail:x.email||'', location:x.address||'', nextStep:x.nextStep||'', followUpDate:x.followUpDate||'', notes:x.description||'' };}
+    function payload(data){return {name:data.name,description:[data.notes,data.nextStep?`Next step: ${data.nextStep}`:'',data.followUpDate?`Follow-up: ${data.followUpDate}`:''].filter(Boolean).join('\n'),website:data.website||undefined,email:data.contactEmail||undefined,phone:data.phone||undefined,sector:data.type||'other',address:data.location||undefined,organizationId:organizationId()};}
+    async function load(options={}){if(loadingPromise&&!options.force)return loadingPromise;loadingPromise=(async()=>{const r=await api().request(`/external-organizations?organizationId=${encodeURIComponent(organizationId())}`);items=(r||[]).map(normalize);notify('harmonia:partners-updated',{items});return items;})();try{return await loadingPromise;}finally{loadingPromise=null;}}
+    function getAll(){return [...items];}function getById(id){return items.find(x=>String(x.id)===String(id))||null;}
+    async function create(data){const x=normalize(await api().request('/external-organizations',{method:'POST',body:JSON.stringify(payload(data))}));items.unshift(x);notify('harmonia:partners-updated',{created:x});return x;}
+    async function update(id,data){const x=normalize(await api().request(`/external-organizations/${encodeURIComponent(id)}`,{method:'PATCH',body:JSON.stringify(payload(data))}));items=items.map(y=>String(y.id)===String(id)?x:y);notify('harmonia:partners-updated',{updated:x});return x;}
+    async function remove(id){await api().request(`/external-organizations/${encodeURIComponent(id)}`,{method:'DELETE'});items=items.filter(x=>String(x.id)!==String(id));notify('harmonia:partners-updated',{deletedId:id});return true;}
+    window.HarmoniaPartners={load,getAll,getById,create,update,delete:remove};
+    console.log('✅ Railway Partners Manager Loaded');
+})();

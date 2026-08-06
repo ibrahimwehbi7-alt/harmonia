@@ -585,3 +585,7 @@ if (document.readyState === "loading") {
 console.log(
     "✅ Notes Page script ready"
 );
+
+document.addEventListener("harmonia:notes-updated", () => {
+    if (typeof window.renderNotes === "function") window.renderNotes();
+});

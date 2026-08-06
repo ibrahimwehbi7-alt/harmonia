@@ -164,7 +164,7 @@ function buildNoteData() {
     };
 }
 
-function saveNoteFromModal() {
+async function saveNoteFromModal() {
     const noteData = buildNoteData();
 
     if (!noteData) {
@@ -178,7 +178,7 @@ function saveNoteFromModal() {
             typeof window.HarmoniaNotes.update ===
                 "function"
         ) {
-            window.HarmoniaNotes.update(
+            await window.HarmoniaNotes.update(
                 editingNoteId,
                 noteData
             );
@@ -187,7 +187,7 @@ function saveNoteFromModal() {
             typeof window.HarmoniaNotes.add ===
                 "function"
         ) {
-            window.HarmoniaNotes.add(
+            await window.HarmoniaNotes.add(
                 noteData
             );
         } else {

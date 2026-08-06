@@ -1,165 +1,517 @@
+console.log("Loading Projects Page");
+
 let activeProjectStatusFilter = "all";
 let activeProjectSearch = "";
 
 function formatProjectStatus(status) {
+    const normalizedStatus =
+        String(status || "")
+            .trim()
+            .toLowerCase();
+
+    const statusLabels = {
+        idea: "Idea",
+        planning: "Planning",
+        active: "Active",
+        paused: "Paused",
+        completed: "Completed",
+        cancelled: "Cancelled",
+        archived: "Archived"
+    };
+
     return (
-        {
-            idea: "Idea",
-            planning: "Planning",
-            active: "Active",
-            paused: "Paused",
-            completed: "Completed",
-            cancelled: "Cancelled",
-            archived: "Archived"
-        }[status] || status
+        statusLabels[normalizedStatus] ||
+        status ||
+        "Unknown"
     );
 }
 
-function renderProjects() {
-    const list = document.getElementById("projectsList");
-    const empty = document.getElementById("projectsEmptyState");
+function getFilteredProjects() {
+    if (
+        !window.ProjectManager ||
+        typeof window.ProjectManager
+            .getAllProjects !== "function"
+    ) {
+        console.error(
+            "ProjectManager is not available."
+        );
 
-    if (!list) return;
+        return [];
+    }
 
-    list.innerHTML = "";
+    let projects =
+        window.ProjectManager.getAllProjects();
 
-    let projects = ProjectManager.getAllProjects();
+    if (!Array.isArray(projects)) {
+        projects = [];
+    }
 
-    if (activeProjectStatusFilter !== "all") {
+    if (
+        activeProjectStatusFilter !==
+        "all"
+    ) {
         projects = projects.filter(
-            p => p.status === activeProjectStatusFilter
+            project =>
+                String(
+                    project.status || ""
+                ).toLowerCase() ===
+                activeProjectStatusFilter
         );
     }
 
     if (activeProjectSearch) {
-        const search = activeProjectSearch.toLowerCase();
+        const search =
+            activeProjectSearch.toLowerCase();
 
-        projects = projects.filter(p =>
-            (p.title || "")
-                .toLowerCase()
-                .includes(search) ||
-            (p.description || "")
-                .toLowerCase()
-                .includes(search)
+        projects = projects.filter(
+            project => {
+                const title =
+                    project.title ||
+                    project.name ||
+                    "";
+
+                const description =
+                    project.description ||
+                    "";
+
+                return (
+                    title
+                        .toLowerCase()
+                        .includes(search) ||
+                    description
+                        .toLowerCase()
+                        .includes(search)
+                );
+            }
         );
     }
 
-    projects.sort((a, b) =>
-        new Date(b.updatedAt) - new Date(a.updatedAt)
+    return projects.sort(
+        (
+            firstProject,
+            secondProject
+        ) =>
+            new Date(
+                secondProject.updatedAt ||
+                secondProject.createdAt ||
+                0
+            ) -
+            new Date(
+                firstProject.updatedAt ||
+                firstProject.createdAt ||
+                0
+            )
     );
+}
 
-    if (empty) {
-        empty.hidden = projects.length > 0;
+function updateProjectCounts(projects) {
+    const totalElement =
+        document.getElementById(
+            "projectTotalCount"
+        );
+
+    const activeElement =
+        document.getElementById(
+            "projectActiveCount"
+        );
+
+    const completedElement =
+        document.getElementById(
+            "projectCompletedCount"
+        );
+
+    if (totalElement) {
+        totalElement.textContent =
+            String(projects.length);
     }
 
-    const total = document.getElementById("projectTotalCount");
-    const active = document.getElementById("projectActiveCount");
-    const completed = document.getElementById("projectCompletedCount");
+    if (activeElement) {
+        const activeCount =
+            projects.filter(
+                project =>
+                    String(
+                        project.status || ""
+                    ).toLowerCase() ===
+                    "active"
+            ).length;
 
-    if (total) total.textContent = projects.length;
-
-    if (active) {
-        active.textContent = projects.filter(
-            p => p.status === "active"
-        ).length;
+        activeElement.textContent =
+            String(activeCount);
     }
 
-    if (completed) {
-        completed.textContent = projects.filter(
-            p => p.status === "completed"
-        ).length;
+    if (completedElement) {
+        const completedCount =
+            projects.filter(
+                project =>
+                    String(
+                        project.status || ""
+                    ).toLowerCase() ===
+                    "completed"
+            ).length;
+
+        completedElement.textContent =
+            String(completedCount);
+    }
+}
+
+function createProjectCard(project) {
+    const card =
+        document.createElement("article");
+
+    card.className = "project-card";
+
+    const title =
+        project.title ||
+        project.name ||
+        "Untitled Project";
+
+    const description =
+        project.description || "";
+
+    const progress =
+        Number(project.progress) || 0;
+
+    card.innerHTML = `
+        <div class="project-card-content">
+            <h3 class="project-card-title"></h3>
+
+            <p class="project-card-description"></p>
+
+            <p>
+                <strong>Status:</strong>
+                <span class="project-card-status"></span>
+            </p>
+
+            <p>
+                <strong>Progress:</strong>
+                <span class="project-card-progress"></span>
+            </p>
+
+            <div class="project-card-actions">
+                <button
+                    type="button"
+                    class="text-button open-btn"
+                >
+                    Open
+                </button>
+
+                <button
+                    type="button"
+                    class="task-action-button edit-btn"
+                >
+                    Edit
+                </button>
+
+                <button
+                    type="button"
+                    class="task-action-button danger delete-btn"
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    `;
+
+    const titleElement =
+        card.querySelector(
+            ".project-card-title"
+        );
+
+    const descriptionElement =
+        card.querySelector(
+            ".project-card-description"
+        );
+
+    const statusElement =
+        card.querySelector(
+            ".project-card-status"
+        );
+
+    const progressElement =
+        card.querySelector(
+            ".project-card-progress"
+        );
+
+    if (titleElement) {
+        titleElement.textContent = title;
+    }
+
+    if (descriptionElement) {
+        descriptionElement.textContent =
+            description;
+    }
+
+    if (statusElement) {
+        statusElement.textContent =
+            formatProjectStatus(
+                project.status
+            );
+    }
+
+    if (progressElement) {
+        progressElement.textContent =
+            `${progress}%`;
+    }
+
+    const openButton =
+        card.querySelector(".open-btn");
+
+    if (openButton) {
+        openButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    typeof window
+                        .openProjectWorkspace ===
+                    "function"
+                ) {
+                    window.openProjectWorkspace(
+                        project.id
+                    );
+                } else {
+                    console.error(
+                        "openProjectWorkspace is unavailable."
+                    );
+                }
+            }
+        );
+    }
+
+    const editButton =
+        card.querySelector(".edit-btn");
+
+    if (editButton) {
+        editButton.addEventListener(
+            "click",
+            () => {
+                if (
+                    typeof window
+                        .openProjectModal ===
+                    "function"
+                ) {
+                    window.openProjectModal(
+                        project
+                    );
+                    return;
+                }
+
+                if (
+                    window.ProjectModal &&
+                    typeof window.ProjectModal
+                        .openEdit === "function"
+                ) {
+                    window.ProjectModal.openEdit(
+                        project.id
+                    );
+                    return;
+                }
+
+                console.error(
+                    "The project editor is unavailable."
+                );
+            }
+        );
+    }
+
+    const deleteButton =
+        card.querySelector(
+            ".delete-btn"
+        );
+
+    if (deleteButton) {
+        deleteButton.addEventListener(
+            "click",
+            async () => {
+                const confirmed =
+                    window.confirm(
+                        `Delete "${title}"?`
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+                try {
+                    await window
+                        .ProjectManager
+                        .deleteProject(
+                            project.id
+                        );
+
+                    renderProjects();
+                } catch (error) {
+                    console.error(
+                        "Project deletion failed:",
+                        error
+                    );
+
+                    window.alert(
+                        error?.message ||
+                        "The project could not be deleted."
+                    );
+                }
+            }
+        );
+    }
+
+    return card;
+}
+
+function renderProjects() {
+    const list =
+        document.getElementById(
+            "projectsList"
+        );
+
+    const emptyState =
+        document.getElementById(
+            "projectsEmptyState"
+        );
+
+    if (!list) {
+        console.error(
+            "The #projectsList element was not found."
+        );
+
+        return;
+    }
+
+    const projects =
+        getFilteredProjects();
+
+    list.innerHTML = "";
+
+    updateProjectCounts(projects);
+
+    if (emptyState) {
+        emptyState.hidden =
+            projects.length > 0;
     }
 
     projects.forEach(project => {
-        const card = document.createElement("article");
-        card.className = "project-card";
-
-        card.innerHTML = `
-            <div class="project-card-content">
-                <h3>${project.title}</h3>
-
-                <p>${project.description || ""}</p>
-
-                <p>
-                    <strong>Status:</strong>
-                    ${formatProjectStatus(project.status)}
-                </p>
-
-                <p>
-                    <strong>Progress:</strong>
-                    ${project.progress || 0}%
-                </p>
-
-                <div class="project-card-actions">
-                    <button class="text-button open-btn">
-                        Open
-                    </button>
-
-                    <button class="task-action-button edit-btn">
-                        Edit
-                    </button>
-
-                    <button class="task-action-button danger delete-btn">
-                        Delete
-                    </button>
-                </div>
-            </div>
-        `;
-
-        card.querySelector(".open-btn").onclick = () => {
-            if (window.openProjectWorkspace) {
-                window.openProjectWorkspace(project.id);
-            }
-        };
-
-        card.querySelector(".edit-btn").onclick = () => {
-            if (window.openProjectModal) {
-                window.openProjectModal(project);
-            }
-        };
-
-        card.querySelector(".delete-btn").onclick = () => {
-            if (
-                confirm(
-                    `Delete "${project.title}"?`
-                )
-            ) {
-                ProjectManager.deleteProject(project.id);
-                renderProjects();
-            }
-        };
+        const card =
+            createProjectCard(project);
 
         list.appendChild(card);
     });
+
+    console.log(
+        `✅ Rendered ${projects.length} projects`
+    );
 }
 
-function initializeProjectsPage() {
-    const search =
-        document.getElementById("projectSearchInput");
+async function loadAndRenderProjects() {
+    const list =
+        document.getElementById(
+            "projectsList"
+        );
 
-    if (search) {
-        search.addEventListener("input", e => {
-            activeProjectSearch = e.target.value.trim();
-            renderProjects();
-        });
+    if (list) {
+        list.innerHTML =
+            "<p>Loading projects…</p>";
     }
 
-    const filter =
-        document.getElementById("projectStatusFilter");
-
-    if (filter) {
-        filter.addEventListener("change", e => {
-            activeProjectStatusFilter =
-                e.target.value;
-            renderProjects();
-        });
+    try {
+        if (
+            window.ProjectManager &&
+            typeof window.ProjectManager
+                .loadProjects === "function"
+        ) {
+            await window.ProjectManager
+                .loadProjects();
+        }
+    } catch (error) {
+        console.error(
+            "Could not load projects:",
+            error
+        );
     }
 
     renderProjects();
 }
 
-window.renderProjects = renderProjects;
-window.renderProjectsPage = renderProjects;
-window.initializeProjectsPage = initializeProjectsPage;
+function initializeProjectsPage() {
+    console.log(
+        "Initializing Projects Page"
+    );
 
-console.log("✅ Projects Page Loaded");
+    const searchInput =
+        document.getElementById(
+            "projectSearchInput"
+        );
+
+    if (
+        searchInput &&
+        searchInput.dataset
+            .projectsInitialized !==
+            "true"
+    ) {
+        searchInput.dataset
+            .projectsInitialized =
+            "true";
+
+        searchInput.addEventListener(
+            "input",
+            event => {
+                activeProjectSearch =
+                    event.target.value
+                        .trim();
+
+                renderProjects();
+            }
+        );
+    }
+
+    const statusFilter =
+        document.getElementById(
+            "projectStatusFilter"
+        );
+
+    if (
+        statusFilter &&
+        statusFilter.dataset
+            .projectsInitialized !==
+            "true"
+    ) {
+        statusFilter.dataset
+            .projectsInitialized =
+            "true";
+
+        statusFilter.addEventListener(
+            "change",
+            event => {
+                activeProjectStatusFilter =
+                    event.target.value ||
+                    "all";
+
+                renderProjects();
+            }
+        );
+    }
+
+    document.addEventListener(
+        "harmonia:projects-updated",
+        renderProjects
+    );
+
+    loadAndRenderProjects();
+}
+
+window.formatProjectStatus =
+    formatProjectStatus;
+
+window.renderProjects =
+    renderProjects;
+
+window.renderProjectsPage =
+    renderProjects;
+
+window.loadAndRenderProjects =
+    loadAndRenderProjects;
+
+window.initializeProjectsPage =
+    initializeProjectsPage;
+
+console.log(
+    "✅ Projects Page Loaded"
+);
