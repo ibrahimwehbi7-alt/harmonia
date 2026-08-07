@@ -10,17 +10,17 @@
     TEAM_MEMBER: {
       name: "team",
       landing: "dashboard",
-      allowed: ["dashboard", "projects", "work", "events", "notes", "files", "messages", "project-workspace"]
+      allowed: ["dashboard", "projects", "work", "events", "notes", "files", "messages", "availability", "project-workspace"]
     },
     ADMIN: {
       name: "admin",
       landing: "dashboard",
-      allowed: ["dashboard", "homepage", "about", "connect", "projects", "work", "events", "notes", "files", "gallery", "partners", "messages", "finance", "analytics", "marketing", "users", "project-workspace"]
+      allowed: ["dashboard", "homepage", "about", "connect", "projects", "work", "events", "notes", "files", "gallery", "partners", "messages", "finance", "analytics", "marketing", "users", "availability", "project-workspace"]
     },
     SUPER_ADMIN: {
       name: "owner",
       landing: "dashboard",
-      allowed: ["dashboard", "homepage", "about", "connect", "projects", "work", "events", "notes", "files", "gallery", "partners", "messages", "finance", "analytics", "marketing", "users", "audience", "project-workspace"]
+      allowed: ["dashboard", "homepage", "about", "connect", "projects", "work", "events", "notes", "files", "gallery", "partners", "messages", "finance", "analytics", "marketing", "users", "audience", "availability", "project-workspace"]
     }
   };
 

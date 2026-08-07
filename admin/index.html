@@ -40,6 +40,7 @@
       <button class="nav-button" data-page="marketing">Marketing</button>
       <button class="nav-button" data-page="users">Users & Access</button>
       <button class="nav-button" data-page="audience" hidden>People & Audience</button>
+      <button class="nav-button" data-page="availability" hidden>Availability</button>
 
       <div class="sidebar-footer">Harmonia Admin v3</div>
     </aside>
@@ -1980,6 +1981,13 @@
   </div>
 </section>
 
+
+<section class="admin-page" id="availability" hidden aria-hidden="true">
+  <div class="page-header"><div><p class="eyebrow">Scheduling</p><h2>Availability</h2><p>Keep your own schedule current. Owners can also find people for specific times.</p></div></div>
+  <div id="availabilitySelf"></div>
+  <section id="availabilityDirectoryPanel" class="admin-card" hidden><div class="page-header"><div><h3>Organization availability</h3><p>Find people whose recurring windows cover the time you need.</p></div></div><div class="availability-filters"><select id="availabilityDay"><option value="">Any day</option><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option><option value="5">Friday</option><option value="6">Saturday</option></select><input id="availabilityStart" type="time"><input id="availabilityEnd" type="time"><button id="availabilitySearchButton" class="primary-button" type="button">Find people</button></div><div id="availabilityDirectory" class="availability-directory"></div></section>
+</section>
+
 <section class="admin-page" id="audience" hidden aria-hidden="true">
   <div class="page-header-row"><div><p class="eyebrow">Owner Command Center</p><h2>People, Audience & Communications</h2><p>Understand who has joined, honor communication consent, create useful audience segments, and prepare campaign drafts.</p></div></div>
   <div id="audienceSummary" class="audience-summary"></div>
@@ -2074,6 +2082,7 @@
 <script src="js/site-content/siteContentManager.js?v=11"></script>
 <script src="js/users/usersPage.js?v=20260806-s2"></script>
 <script src="js/audience/audiencePage.js?v=20260807-v3"></script>
+<script src="js/availability/availabilityPage.js?v=20260807-v1"></script>
 <script src="js/core/roleExperience.js?v=20260807-v2"></script>
 <script src="js/router.js?v=20260807-v2"></script>
 <script src="js/app.js?v=20260806-v1"></script>

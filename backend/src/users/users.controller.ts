@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
 import { CreateCampaignDraftDto } from './dto/create-campaign-draft.dto';
+import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 import { AuthenticatedUser, UsersService } from './users.service';
 
 type AuthenticatedRequest = { user: AuthenticatedUser };
@@ -35,6 +36,26 @@ export class UsersController {
     @Body() dto: UpdateProfileDto,
   ) {
     return this.usersService.updateProfile(request.user.userId, dto);
+  }
+
+  @Get('me/availability')
+  getMyAvailability(@Request() request: AuthenticatedRequest) {
+    return this.usersService.getAvailability(request.user.userId);
+  }
+
+  @Patch('me/availability')
+  updateMyAvailability(@Request() request: AuthenticatedRequest, @Body() dto: UpdateAvailabilityDto) {
+    return this.usersService.updateAvailability(request.user.userId, dto);
+  }
+
+  @Get('availability')
+  availabilityDirectory(
+    @Request() request: AuthenticatedRequest,
+    @Query('dayOfWeek') dayOfWeek?: string,
+    @Query('startTime') startTime?: string,
+    @Query('endTime') endTime?: string,
+  ) {
+    return this.usersService.getAvailabilityDirectory(request.user, dayOfWeek, startTime, endTime);
   }
 
   @Get('audience')

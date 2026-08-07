@@ -89,6 +89,58 @@ export class UsersService {
     return this.getProfile(userId);
   }
 
+  async getAvailability(userId: string) {
+    const profile = await this.prisma.availabilityProfile.findUnique({
+      where: { userId },
+      include: { weekly: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] }, exceptions: { orderBy: { date: 'asc' } } },
+    });
+    return profile || {
+      userId, timeZone: 'America/Chicago', preferredHoursPerWeek: 0,
+      commitmentLevel: 'CASUAL', schedulingNotes: '', isOpenToOpportunities: true,
+      weekly: [], exceptions: [],
+    };
+  }
+
+  async updateAvailability(userId: string, dto: any) {
+    const weekly = Array.isArray(dto.weekly) ? dto.weekly.map((item: any) => {
+      const dayOfWeek = Number(item.dayOfWeek);
+      const startTime = String(item.startTime || '');
+      const endTime = String(item.endTime || '');
+      if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6 || !/^([01]\d|2[0-3]):[0-5]\d$/.test(startTime) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(endTime) || startTime >= endTime) {
+        throw new BadRequestException('Invalid weekly availability window');
+      }
+      return { dayOfWeek, startTime, endTime };
+    }).slice(0, 35) : [];
+    const exceptions = Array.isArray(dto.exceptions) ? dto.exceptions.map((item: any) => {
+      const date = new Date(String(item.date || ''));
+      if (Number.isNaN(date.getTime())) throw new BadRequestException('Invalid availability exception date');
+      return { date, available: Boolean(item.available), startTime: item.startTime ? String(item.startTime) : null, endTime: item.endTime ? String(item.endTime) : null, note: item.note ? String(item.note).slice(0, 250) : null };
+    }).slice(0, 100) : [];
+    await this.prisma.$transaction(async tx => {
+      const profile = await tx.availabilityProfile.upsert({
+        where: { userId },
+        create: { userId, timeZone: dto.timeZone || 'America/Chicago', preferredHoursPerWeek: Number(dto.preferredHoursPerWeek || 0), commitmentLevel: dto.commitmentLevel || 'CASUAL', schedulingNotes: dto.schedulingNotes?.trim() || null, isOpenToOpportunities: dto.isOpenToOpportunities !== false },
+        update: { timeZone: dto.timeZone || 'America/Chicago', preferredHoursPerWeek: Number(dto.preferredHoursPerWeek || 0), commitmentLevel: dto.commitmentLevel || 'CASUAL', schedulingNotes: dto.schedulingNotes?.trim() || null, isOpenToOpportunities: dto.isOpenToOpportunities !== false },
+      });
+      await tx.weeklyAvailability.deleteMany({ where: { profileId: profile.id } });
+      await tx.availabilityException.deleteMany({ where: { profileId: profile.id } });
+      if (weekly.length) await tx.weeklyAvailability.createMany({ data: weekly.map((entry: any) => ({ ...entry, profileId: profile.id })) });
+      if (exceptions.length) await tx.availabilityException.createMany({ data: exceptions.map((entry: any) => ({ ...entry, profileId: profile.id })) });
+    });
+    return this.getAvailability(userId);
+  }
+
+  async getAvailabilityDirectory(actor: AuthenticatedUser, dayValue?: string, startTime?: string, endTime?: string) {
+    this.assertOwner(actor);
+    const dayOfWeek = dayValue === undefined || dayValue === '' ? undefined : Number(dayValue);
+    const profiles = await this.prisma.availabilityProfile.findMany({
+      where: { isOpenToOpportunities: true, ...(dayOfWeek === undefined ? {} : { weekly: { some: { dayOfWeek, ...(startTime ? { startTime: { lte: startTime } } : {}), ...(endTime ? { endTime: { gte: endTime } } : {}) } } }) },
+      include: { user: { select: { id: true, firstName: true, lastName: true, email: true, role: true, interests: true } }, weekly: { orderBy: [{ dayOfWeek: 'asc' }, { startTime: 'asc' }] }, exceptions: { where: { date: { gte: new Date() } }, orderBy: { date: 'asc' }, take: 10 } },
+      orderBy: { updatedAt: 'desc' }, take: 500,
+    });
+    return profiles;
+  }
+
   async listUsers(actor: AuthenticatedUser, search = '') {
     this.assertGlobalAdmin(actor);
     const q = search.trim();

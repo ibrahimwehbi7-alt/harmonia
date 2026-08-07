@@ -146,9 +146,54 @@ model User {
   authoredNotes       Note[]               @relation("NoteAuthor")
   uploadedFiles       FileAsset[]          @relation("FileAssetUploader")
   createdCampaignDrafts CampaignDraft[]     @relation("CampaignDraftCreatedBy")
+  availabilityProfile AvailabilityProfile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+
+model AvailabilityProfile {
+  id                     String   @id @default(cuid())
+  userId                 String   @unique
+  timeZone               String   @default("America/Chicago")
+  preferredHoursPerWeek  Int      @default(0)
+  commitmentLevel        String   @default("CASUAL")
+  schedulingNotes        String?
+  isOpenToOpportunities  Boolean  @default(true)
+
+  user        User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekly      WeeklyAvailability[]
+  exceptions AvailabilityException[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model WeeklyAvailability {
+  id        String @id @default(cuid())
+  profileId String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+
+  profile AvailabilityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, dayOfWeek])
+}
+
+model AvailabilityException {
+  id        String   @id @default(cuid())
+  profileId String
+  date      DateTime
+  available Boolean  @default(false)
+  startTime String?
+  endTime   String?
+  note      String?
+
+  profile AvailabilityProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@index([profileId, date])
 }
 
 model CampaignDraft {

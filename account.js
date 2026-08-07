@@ -97,13 +97,34 @@
   }
 
   async function loadMemberData() {
-    const [eventsResult, tasksResult] = await Promise.allSettled([
+    const [eventsResult, tasksResult, availabilityResult] = await Promise.allSettled([
       fetch(`${API}/public/site/${SITE_SLUG}/events?limit=4`, { headers: { Accept: "application/json" } }).then(response => response.ok ? response.json() : []),
-      request("/tasks")
+      request("/tasks"),
+      request("/users/me/availability")
     ]);
     memberEvents = eventsResult.status === "fulfilled" && Array.isArray(eventsResult.value) ? eventsResult.value : [];
     const tasks = tasksResult.status === "fulfilled" && Array.isArray(tasksResult.value) ? tasksResult.value : [];
     assignedWork = tasks.filter(task => task?.assignedTo?.id === currentUser.id || task?.assignedToId === currentUser.id);
+    memberAvailability = availabilityResult.status === "fulfilled" ? availabilityResult.value : { weekly: [], exceptions: [] };
+  }
+
+  function renderAvailabilityEditor() {
+    const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const byDay = new Map((memberAvailability?.weekly || []).map(item => [Number(item.dayOfWeek), item]));
+    return `<section class="member-panel"><p class="eyebrow">Availability</p><h3>Share when helping feels realistic</h3><p>This is only used to suggest opportunities. It does not commit you to anything.</p>
+      <form id="memberAvailabilityForm" class="member-availability-form">
+        <div class="availability-week-grid">${days.map((day,index)=>{const item=byDay.get(index);return `<div class="availability-day-row"><label><input type="checkbox" name="day-${index}" ${item?'checked':''}> ${day}</label><input type="time" name="start-${index}" value="${item?.startTime||'17:00'}"><span>to</span><input type="time" name="end-${index}" value="${item?.endTime||'20:00'}"></div>`}).join("")}</div>
+        <div class="harmonia-account-name-row"><label>Preferred hours each week<input type="number" min="0" max="80" name="preferredHoursPerWeek" value="${Number(memberAvailability?.preferredHoursPerWeek||0)}"></label><label>Commitment level<select name="commitmentLevel"><option value="CASUAL" ${memberAvailability?.commitmentLevel==='CASUAL'?'selected':''}>Occasional</option><option value="REGULAR" ${memberAvailability?.commitmentLevel==='REGULAR'?'selected':''}>Regular</option><option value="LEADERSHIP" ${memberAvailability?.commitmentLevel==='LEADERSHIP'?'selected':''}>Open to leading</option></select></label></div>
+        <label>Scheduling note<textarea name="schedulingNotes" maxlength="500" placeholder="Classes until 3 PM, usually free on weekends…">${escapeHtml(memberAvailability?.schedulingNotes||'')}</textarea></label>
+        <label class="harmonia-account-check"><input type="checkbox" name="isOpenToOpportunities" ${memberAvailability?.isOpenToOpportunities!==false?'checked':''}> Suggest opportunities that fit my schedule</label>
+        <button class="primary-button" type="submit">Save availability</button>
+      </form></section>`;
+  }
+
+  async function saveAvailability(event) {
+    event.preventDefault(); const form=event.currentTarget; const weekly=[];
+    for(let day=0;day<7;day++){if(form.elements[`day-${day}`].checked)weekly.push({dayOfWeek:day,startTime:form.elements[`start-${day}`].value,endTime:form.elements[`end-${day}`].value});}
+    try { memberAvailability=await request('/users/me/availability',{method:'PATCH',body:JSON.stringify({weekly,exceptions:memberAvailability?.exceptions||[],preferredHoursPerWeek:Number(form.preferredHoursPerWeek.value||0),commitmentLevel:form.commitmentLevel.value,schedulingNotes:form.schedulingNotes.value,isOpenToOpportunities:form.isOpenToOpportunities.checked,timeZone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Chicago'})}); setMessage('Availability saved.'); renderMemberSection('availability'); } catch(error){setMessage(error.message,true);}
   }
 
   function renderEventCards() {
@@ -123,6 +144,7 @@
       content.innerHTML = `<section class="member-panel"><p class="eyebrow">Upcoming</p><h3>Gather with us</h3>${renderEventCards()}</section>`;
       return;
     }
+    if (section === "availability") { content.innerHTML = renderAvailabilityEditor(); content.querySelector("#memberAvailabilityForm").onsubmit = saveAvailability; return; }
     if (section === "profile") {
       const selected = new Set(currentUser.interests || []);
       content.innerHTML = `<section class="member-panel">
@@ -161,7 +183,7 @@
       panel.innerHTML = `<div class="harmonia-account-profile-head"><div><strong>${escapeHtml(currentUser.firstName)} ${escapeHtml(currentUser.lastName)}</strong><span>${escapeHtml(currentUser.email)}</span></div><span class="harmonia-role-badge">${escapeHtml(String(currentUser.role).replaceAll("_", " "))}</span></div><div class="harmonia-account-profile-actions"><a class="primary-button" href="${destination}">Open Harmonia workspace</a><button type="button" class="text-link" id="harmonia-public-signout">Sign out</button></div>`;
       panel.querySelector("#harmonia-public-signout").onclick = logout; return;
     }
-    panel.innerHTML = `<div class="member-portal-shell"><div class="member-portal-head"><div><span>Harmonia Member</span><strong>${escapeHtml(currentUser.firstName)} ${escapeHtml(currentUser.lastName)}</strong></div><button type="button" class="text-link" id="harmonia-public-signout">Sign out</button></div><nav class="member-portal-nav"><button type="button" data-member-section="home" class="active">Home</button><button type="button" data-member-section="events">Events</button><button type="button" data-member-section="profile">Profile</button></nav><div id="memberPortalContent"></div></div>`;
+    panel.innerHTML = `<div class="member-portal-shell"><div class="member-portal-head"><div><span>Harmonia Member</span><strong>${escapeHtml(currentUser.firstName)} ${escapeHtml(currentUser.lastName)}</strong></div><button type="button" class="text-link" id="harmonia-public-signout">Sign out</button></div><nav class="member-portal-nav"><button type="button" data-member-section="home" class="active">Home</button><button type="button" data-member-section="events">Events</button>${currentUser.volunteerUpdatesOptIn ? `<button type="button" data-member-section="availability">Availability</button>` : ""}<button type="button" data-member-section="profile">Profile</button></nav><div id="memberPortalContent"></div></div>`;
     panel.querySelector("#harmonia-public-signout").onclick = logout;
     panel.querySelectorAll("[data-member-section]").forEach(button => button.onclick = () => renderMemberSection(button.dataset.memberSection));
     await loadMemberData(); renderMemberSection("home");
