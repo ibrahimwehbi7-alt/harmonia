@@ -39,6 +39,7 @@
       <button class="nav-button" data-page="analytics">Analytics</button>
       <button class="nav-button" data-page="marketing">Marketing</button>
       <button class="nav-button" data-page="users">Users & Access</button>
+      <button class="nav-button" data-page="audience" hidden>People & Audience</button>
 
       <div class="sidebar-footer">Harmonia Admin v3</div>
     </aside>
@@ -1978,6 +1979,12 @@
     <p id="usersEmptyState" class="empty-state" hidden>No users found.</p>
   </div>
 </section>
+
+<section class="admin-page" id="audience" hidden aria-hidden="true">
+  <div class="page-header-row"><div><p class="eyebrow">Owner Command Center</p><h2>People & Audience</h2><p>View registered accounts and newsletter consent. This page is visible only to the Super Admin.</p></div></div>
+  <div id="audienceSummary" class="audience-summary"></div>
+  <div class="users-table-wrap"><table class="users-table"><thead><tr><th>Person</th><th>Email updates</th><th>Interests</th><th>Joined</th></tr></thead><tbody id="audienceTableBody"></tbody></table></div>
+</section>
 </main>
   </div>
 <script src="js/ui.js"></script>
@@ -2048,6 +2055,7 @@
 
 <script src="js/site-content/siteContentManager.js?v=11"></script>
 <script src="js/users/usersPage.js?v=20260806-s2"></script>
+<script src="js/audience/audiencePage.js?v=20260807-v2"></script>
 <script src="js/router.js?v=20260805-5"></script>
 <script src="js/app.js?v=20260806-v1"></script>
 </body>

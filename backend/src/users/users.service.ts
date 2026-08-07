@@ -40,6 +40,9 @@ export class UsersService {
         firstName: true,
         lastName: true,
         role: true,
+        newsletterOptIn: true,
+        newsletterOptInAt: true,
+        interests: true,
         createdAt: true,
         updatedAt: true,
         memberships: {
@@ -62,6 +65,13 @@ export class UsersService {
     const data: Prisma.UserUpdateInput = {};
     if (dto.firstName !== undefined) data.firstName = dto.firstName.trim();
     if (dto.lastName !== undefined) data.lastName = dto.lastName.trim();
+    if (dto.interests !== undefined) {
+      data.interests = [...new Set(dto.interests.map(value => value.trim()).filter(Boolean))].slice(0, 12);
+    }
+    if (dto.newsletterOptIn !== undefined) {
+      data.newsletterOptIn = dto.newsletterOptIn;
+      data.newsletterOptInAt = dto.newsletterOptIn ? new Date() : null;
+    }
 
     if (data.firstName === '' || data.lastName === '') {
       throw new BadRequestException('First and last name cannot be empty');
@@ -90,6 +100,8 @@ export class UsersService {
         firstName: true,
         lastName: true,
         role: true,
+        newsletterOptIn: true,
+        interests: true,
         createdAt: true,
         memberships: {
           select: {
@@ -101,6 +113,42 @@ export class UsersService {
       orderBy: [{ createdAt: 'desc' }],
       take: 250,
     });
+  }
+
+
+  async getAudience(actor: AuthenticatedUser) {
+    if (actor.role !== UserRole.SUPER_ADMIN) {
+      throw new ForbiddenException('Owner access is required');
+    }
+
+    const people = await this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        newsletterOptIn: true,
+        newsletterOptInAt: true,
+        interests: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 1000,
+    });
+
+    return {
+      summary: {
+        totalAccounts: people.length,
+        newsletterSubscribers: people.filter(person => person.newsletterOptIn).length,
+        newThisMonth: people.filter(person => {
+          const date = new Date(person.createdAt);
+          const now = new Date();
+          return date.getUTCFullYear() === now.getUTCFullYear() && date.getUTCMonth() === now.getUTCMonth();
+        }).length,
+      },
+      people,
+    };
   }
 
   async updateRole(

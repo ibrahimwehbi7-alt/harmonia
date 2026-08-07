@@ -110,6 +110,22 @@ export class TasksService {
       });
     }
 
+    if (user.role === UserRole.VIEWER) {
+      return this.prisma.task.findMany({
+        where: { assignedToId: user.userId },
+        include: {
+          project: true,
+          assignedTo: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+          createdBy: {
+            select: { id: true, email: true, firstName: true, lastName: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+
     return this.prisma.task.findMany({
       where: {
         OR: [

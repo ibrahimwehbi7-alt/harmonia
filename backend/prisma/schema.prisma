@@ -121,6 +121,10 @@ model User {
 
   role UserRole @default(VIEWER)
 
+  newsletterOptIn   Boolean  @default(false)
+  newsletterOptInAt DateTime?
+  interests         String[] @default([])
+
   projects    Project[]
   memberships OrganizationMember[]
 

@@ -35,6 +35,11 @@ export class UsersController {
     return this.usersService.updateProfile(request.user.userId, dto);
   }
 
+  @Get('audience')
+  audience(@Request() request: AuthenticatedRequest) {
+    return this.usersService.getAudience(request.user);
+  }
+
   @Get()
   list(
     @Request() request: AuthenticatedRequest,
