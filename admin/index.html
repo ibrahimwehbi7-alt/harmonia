@@ -4,8 +4,27 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Harmonia Admin · Version 1</title>
+<script src="../config.js"></script>
+<script src="../shared/identity.js?v=20260807-prod-admin"></script>
 <link rel="stylesheet" href="css/main.css?v=5">
 <link rel="stylesheet" href="css/site-content.css?v=11">
+<link rel="stylesheet" href="css/workforce.css?v=20260807-d2">
+<link rel="stylesheet" href="css/engagement.css?v=20260807-d3">
+<link rel="stylesheet" href="css/intelligence.css?v=20260807-d4">
+<style id="harmonia-workspace-gate-style">
+  html.harmonia-gating body { visibility: hidden !important; }
+</style>
+<script>
+  document.documentElement.classList.add("harmonia-gating");
+  (async function(){
+    try {
+      await window.HarmoniaIdentity.guard(["ADMIN", "SUPER_ADMIN"], { allowLocalPreview: true });
+    } catch (error) {
+      console.error("Admin identity gate failed", error);
+      location.replace("/account/?next=" + encodeURIComponent(location.pathname + location.search + location.hash));
+    }
+  })();
+</script>
 </head>
 
 <body>
@@ -38,6 +57,9 @@
       <button class="nav-button" data-page="finance">Finance</button>
       <button class="nav-button" data-page="analytics">Analytics</button>
       <button class="nav-button" data-page="marketing">Marketing</button>
+      <button class="nav-button" data-page="workforce">People, Teams & Work</button>
+      <button class="nav-button" data-page="engagement">Events, Relationships & Communications</button>
+      <button class="nav-button" data-page="intelligence">Intelligence, Content & Impact</button>
       <button class="nav-button" data-page="users">Users & Access</button>
       <button class="nav-button" data-page="audience" hidden>People & Audience</button>
       <button class="nav-button" data-page="availability" hidden>Availability</button>
@@ -50,6 +72,11 @@
         <div>
           <p class="eyebrow">Harmonia Admin</p>
           <h1 id="pageTitle">Dashboard</h1>
+        </div>
+
+        <div class="workspace-preview-links" id="workspacePreviewLinks" hidden>
+          <a href="/team/?preview=1" target="_blank" rel="noopener">Preview team</a>
+          <a href="/member/?preview=1" target="_blank" rel="noopener">Preview member</a>
         </div>
 
         <a
@@ -1965,6 +1992,12 @@
 
     
 
+<section class="admin-page" id="intelligence" hidden aria-hidden="true"><div class="page-header-row"><div><p class="eyebrow">Harmonia Intelligence</p><h2>Intelligence, Content & Impact</h2><p>Search organizational knowledge, measure mission progress, and prepare structured plans.</p></div></div><div id="intelligenceRoot"></div></section>
+
+<section class="admin-page" id="engagement" hidden aria-hidden="true"><div class="page-header-row"><div><p class="eyebrow">Engagement OS</p><h2>Events, Relationships & Communications</h2><p>Run events, understand relationships, and coordinate outreach.</p></div></div><div id="engagementRoot"></div></section>
+
+<section class="admin-page" id="workforce" hidden aria-hidden="true"><div class="page-header-row"><div><p class="eyebrow">Workforce OS</p><h2>People, Teams & Work</h2><p>Coordinate skills, departments, assignments, invitations, and contributions.</p></div></div><div id="workforceRoot"></div></section>
+
 <section class="admin-page" id="users" hidden aria-hidden="true">
   <div class="page-header-row">
     <div><p class="eyebrow">Organization</p><h2>Users & Access</h2><p>New public accounts begin as Viewers. Promote people only when their responsibilities require it.</p></div>
@@ -2016,7 +2049,7 @@
 <script src="js/ui.js"></script>
 
 <script src="js/core/apiClient.js?v=20260805-5"></script>
-<script src="js/core/authManager.js?v=20260805-5"></script>
+<script src="js/core/authManager.js?v=20260807-prod-admin"></script>
 <script src="js/core/harmoniaCore.js"></script>
 <script src="js/core/storage.js"></script>
 <script src="js/core/models.js"></script>
@@ -2083,8 +2116,11 @@
 <script src="js/users/usersPage.js?v=20260806-s2"></script>
 <script src="js/audience/audiencePage.js?v=20260807-v3"></script>
 <script src="js/availability/availabilityPage.js?v=20260807-v1"></script>
-<script src="js/core/roleExperience.js?v=20260807-v2"></script>
+<script src="js/core/roleExperience.js?v=20260807-prod-admin"></script>
 <script src="js/router.js?v=20260807-v2"></script>
 <script src="js/app.js?v=20260806-v1"></script>
+<script src="js/workforce/workforcePage.js?v=20260807-d2"></script>
+<script src="js/engagement/engagementPage.js?v=20260807-d3"></script>
+<script src="js/intelligence/intelligencePage.js?v=20260807-d4"></script>
 </body>
 </html>
