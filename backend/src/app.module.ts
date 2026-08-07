@@ -15,6 +15,9 @@ import { ProjectsModule } from './projects/projects.module';
 import { TaskCommentsModule } from './task-comments/task-comments.module';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
+import { IntelligenceModule } from './intelligence/intelligence.module';
+import { EngagementModule } from './engagement/engagement.module';
+import { WorkforceModule } from './workforce/workforce.module';
 
 import { SiteContentModule } from './site-content/site-content.module';
 
@@ -37,6 +40,9 @@ import { SiteContentModule } from './site-content/site-content.module';
     NotesModule,
     FilesModule,
     SiteContentModule,
+    IntelligenceModule,
+    EngagementModule,
+    WorkforceModule,
   ],
   controllers: [HealthController],
 })

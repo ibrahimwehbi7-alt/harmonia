@@ -6,6 +6,7 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { UserRole } from '@prisma/client';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -16,7 +17,7 @@ type AuthenticatedRequest = {
   user: {
     userId: string;
     email: string;
-    role: string;
+    role: UserRole;
   };
 };
 
