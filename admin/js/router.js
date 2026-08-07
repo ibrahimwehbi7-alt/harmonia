@@ -70,6 +70,17 @@
         pageId,
         options = {}
     ) {
+        if (
+            window.HarmoniaRoleExperience &&
+            !window.HarmoniaRoleExperience.canAccess(pageId)
+        ) {
+            const fallback = window.HarmoniaRoleExperience.getLandingPage();
+            if (pageId !== fallback) {
+                return openAdminPage(fallback, options);
+            }
+            return false;
+        }
+
         const targetPage =
             document.getElementById(
                 pageId
@@ -185,7 +196,7 @@
             )
         )
             ? requested
-            : "dashboard";
+            : (window.HarmoniaRoleExperience?.getLandingPage?.() || "dashboard");
     }
 
     function initializeRouter() {
