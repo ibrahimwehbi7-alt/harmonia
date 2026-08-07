@@ -571,3 +571,49 @@ body.internal-page .page {
 /* Harmonia public accounts */
 .account-button{position:absolute;right:clamp(1rem,3vw,2.5rem);top:50%;transform:translateY(-50%);border:1px solid currentColor;background:transparent;color:inherit;border-radius:999px;padding:.65rem 1rem;font:inherit;cursor:pointer;z-index:4}.account-button:hover{background:rgba(255,255,255,.12)}
 #harmonia-account-overlay{position:fixed;inset:0;z-index:99999;background:rgba(7,26,53,.88);display:flex;align-items:center;justify-content:center;padding:24px;overflow:auto}#harmonia-account-overlay[hidden]{display:none}.harmonia-account-card{width:min(520px,100%);max-height:calc(100vh - 48px);overflow:auto;background:#fff;color:#071a35;border-radius:24px;padding:32px;box-shadow:0 30px 90px rgba(0,0,0,.35);position:relative}.harmonia-account-close{position:absolute;right:18px;top:14px;border:0;background:transparent;font-size:2rem;cursor:pointer;color:#071a35}.harmonia-account-card h2{font-size:2rem;margin:.25rem 0 1.25rem}.harmonia-account-tabs{display:flex;gap:.5rem;margin-bottom:1rem}.harmonia-account-tabs button{flex:1;border:1px solid #cad2dd;background:#f3f6f9;border-radius:999px;padding:.7rem;cursor:pointer}.harmonia-account-tabs button.active{background:#071a35;color:#fff}.harmonia-account-form{display:grid;gap:1rem}.harmonia-account-form label{display:grid;gap:.4rem;font-weight:600}.harmonia-account-form input{width:100%;box-sizing:border-box;padding:.8rem .9rem;border:1px solid #c8d0da;border-radius:12px;font:inherit}.harmonia-account-name-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}.harmonia-account-check{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center;font-weight:400!important}.harmonia-account-check input{width:auto}.harmonia-account-note{font-size:.9rem;line-height:1.5;color:#596575;margin:0}.harmonia-account-message{min-height:1.3em;margin:1rem 0 0;color:#24603b}.harmonia-account-message.error{color:#a62b2b}.harmonia-account-profile-head{display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;margin-bottom:1.25rem}.harmonia-account-profile-head div{display:grid;gap:.2rem}.harmonia-account-profile-head span{color:#667383}.harmonia-role-badge{background:#e9eef4;color:#071a35!important;padding:.35rem .65rem;border-radius:999px;font-size:.75rem;font-weight:700}.harmonia-account-profile-actions{display:grid;gap:1rem;margin-top:1.25rem}.harmonia-account-profile-actions .secondary-button{text-align:center;text-decoration:none}.harmonia-account-profile-actions .text-link{justify-self:start}@media(max-width:600px){.account-button{right:.75rem;padding:.5rem .75rem}.harmonia-account-card{padding:24px 18px}.harmonia-account-name-row{grid-template-columns:1fr}}
+
+/* Sprint 2.1: role-aware routing and Viewer My Work */
+.harmonia-my-work {
+  margin-top: 1.1rem;
+  border-top: 1px solid rgba(12, 37, 68, 0.12);
+  padding-top: 1rem;
+}
+.harmonia-my-work-heading,
+.harmonia-my-work-item,
+.harmonia-my-work-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+}
+.harmonia-my-work-heading { margin-bottom: .75rem; }
+.harmonia-my-work-heading span,
+.harmonia-my-work-item span,
+.harmonia-my-work-empty p { color: var(--muted, #5f6b78); font-size: .9rem; }
+.harmonia-my-work-list { display: grid; gap: .65rem; }
+.harmonia-my-work-item {
+  align-items: flex-start;
+  border: 1px solid rgba(12, 37, 68, 0.12);
+  border-radius: 14px;
+  padding: .85rem;
+  background: rgba(255,255,255,.72);
+}
+.harmonia-my-work-item > div:first-child { display: grid; gap: .2rem; }
+.harmonia-my-work-meta { flex-wrap: wrap; justify-content: flex-end; font-size: .82rem; }
+.harmonia-my-work-meta span:first-child {
+  border-radius: 999px;
+  padding: .25rem .55rem;
+  background: rgba(16, 73, 126, .09);
+  color: #10497e;
+  font-weight: 700;
+}
+.harmonia-my-work-empty {
+  border: 1px dashed rgba(12, 37, 68, 0.2);
+  border-radius: 14px;
+  padding: 1rem;
+}
+.harmonia-my-work-empty p { margin: .35rem 0 0; }
+@media (max-width: 560px) {
+  .harmonia-my-work-item { display: grid; }
+  .harmonia-my-work-meta { justify-content: flex-start; }
+}

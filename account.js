@@ -93,6 +93,74 @@
     setMessage("");
   }
 
+  function destinationForRole(role) {
+    if (role === "ADMIN" || role === "SUPER_ADMIN") return "/admin/#dashboard";
+    if (role === "TEAM_MEMBER") return "/admin/#work";
+    return "";
+  }
+
+  function formatDate(value) {
+    if (!value) return "No deadline";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "No deadline";
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric"
+    }).format(date);
+  }
+
+  async function loadMyWork() {
+    const container = document.getElementById("harmonia-my-work");
+    if (!container || !currentUser) return;
+    container.innerHTML = '<p class="harmonia-account-note">Loading your assigned work…</p>';
+
+    try {
+      const tasks = await request("/tasks");
+      const assigned = (Array.isArray(tasks) ? tasks : []).filter(task =>
+        task?.assignedTo?.id === currentUser.id || task?.assignedToId === currentUser.id
+      );
+
+      if (!assigned.length) {
+        container.innerHTML = `
+          <div class="harmonia-my-work-empty">
+            <strong>No assigned tasks yet</strong>
+            <p>Your assignments will appear here as soon as a Harmonia team member sends you work.</p>
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="harmonia-my-work-heading">
+          <strong>My assigned work</strong>
+          <span>${assigned.length} task${assigned.length === 1 ? "" : "s"}</span>
+        </div>
+        <div class="harmonia-my-work-list">
+          ${assigned.map(task => `
+            <article class="harmonia-my-work-item">
+              <div>
+                <strong>${escapeHtml(task.title)}</strong>
+                <span>${escapeHtml(task.project?.name || "Harmonia")}</span>
+              </div>
+              <div class="harmonia-my-work-meta">
+                <span>${escapeHtml(String(task.status || "TODO").replaceAll("_", " "))}</span>
+                <span>${escapeHtml(formatDate(task.dueDate))}</span>
+              </div>
+            </article>`).join("")}
+        </div>`;
+    } catch (error) {
+      container.innerHTML = `<p class="harmonia-account-message error">${escapeHtml(error.message)}</p>`;
+    }
+  }
+
+  function routeAfterLogin() {
+    const destination = destinationForRole(currentUser?.role);
+    if (!destination) return false;
+    setMessage("Opening your Harmonia workspace…");
+    window.setTimeout(() => window.location.assign(destination), 250);
+    return true;
+  }
+
   function renderProfile() {
     const tabs = document.querySelector("[data-account-tabs]");
     const loginForm = document.getElementById("harmonia-login-form");
@@ -115,11 +183,15 @@
         <button class="primary-button" type="submit">Save profile</button>
       </form>
       <div class="harmonia-account-profile-actions">
-        ${["ADMIN","SUPER_ADMIN","TEAM_MEMBER"].includes(currentUser.role) ? '<a class="secondary-button" href="/admin/">Open Harmonia workspace</a>' : '<p class="harmonia-account-note">Your Viewer account is active. Assigned work and availability will appear here in the next sprint.</p>'}
+        ${destinationForRole(currentUser.role)
+          ? `<a class="secondary-button" href="${destinationForRole(currentUser.role)}">Open Harmonia workspace</a>`
+          : '<p class="harmonia-account-note">Your Viewer account is active. This account shows only work assigned directly to you.</p>'}
         <button type="button" class="text-link" id="harmonia-public-signout">Sign out</button>
-      </div>`;
+      </div>
+      ${destinationForRole(currentUser.role) ? "" : '<section id="harmonia-my-work" class="harmonia-my-work"></section>'}`;
     panel.querySelector("#harmonia-profile-form").onsubmit = updateProfile;
     panel.querySelector("#harmonia-public-signout").onclick = logout;
+    if (!destinationForRole(currentUser.role)) loadMyWork();
   }
 
   async function login(event) {
@@ -131,8 +203,10 @@
       saveToken(result.accessToken, form.remember.checked);
       currentUser = await request("/users/me");
       updateButton();
-      renderProfile();
-      setMessage("Signed in.");
+      if (!routeAfterLogin()) {
+        renderProfile();
+        setMessage("Signed in.");
+      }
     } catch (error) { setMessage(error.message, true); }
   }
 
