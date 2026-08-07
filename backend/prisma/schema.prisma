@@ -123,6 +123,10 @@ model User {
 
   newsletterOptIn   Boolean  @default(false)
   newsletterOptInAt DateTime?
+  eventUpdatesOptIn Boolean  @default(false)
+  volunteerUpdatesOptIn Boolean @default(false)
+  partnerUpdatesOptIn Boolean @default(false)
+  marketingUnsubscribedAt DateTime?
   interests         String[] @default([])
 
   projects    Project[]
@@ -141,9 +145,30 @@ model User {
   createdEvents       Event[]              @relation("EventCreatedBy")
   authoredNotes       Note[]               @relation("NoteAuthor")
   uploadedFiles       FileAsset[]          @relation("FileAssetUploader")
+  createdCampaignDrafts CampaignDraft[]     @relation("CampaignDraftCreatedBy")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CampaignDraft {
+  id             String   @id @default(cuid())
+  name           String
+  subject        String
+  body           String
+  audienceType   String
+  interestFilters String[] @default([])
+  recipientCount Int      @default(0)
+  status         String   @default("DRAFT")
+
+  createdById String
+  createdBy   User @relation("CampaignDraftCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdById])
+  @@index([status])
 }
 
 model Organization {

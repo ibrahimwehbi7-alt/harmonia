@@ -1981,9 +1981,27 @@
 </section>
 
 <section class="admin-page" id="audience" hidden aria-hidden="true">
-  <div class="page-header-row"><div><p class="eyebrow">Owner Command Center</p><h2>People & Audience</h2><p>View registered accounts and newsletter consent. This page is visible only to the Super Admin.</p></div></div>
+  <div class="page-header-row"><div><p class="eyebrow">Owner Command Center</p><h2>People, Audience & Communications</h2><p>Understand who has joined, honor communication consent, create useful audience segments, and prepare campaign drafts.</p></div></div>
   <div id="audienceSummary" class="audience-summary"></div>
-  <div class="users-table-wrap"><table class="users-table"><thead><tr><th>Person</th><th>Email updates</th><th>Interests</th><th>Joined</th></tr></thead><tbody id="audienceTableBody"></tbody></table></div>
+  <div class="audience-controls">
+    <label>Audience segment<select id="audienceSegment"><option value="ALL">All accounts</option><option value="NEWSLETTER">Newsletter subscribers</option><option value="EVENTS">Event updates</option><option value="VOLUNTEERS">Volunteer opportunities</option><option value="PARTNERS">Partner updates</option><option value="UNSUBSCRIBED">Unsubscribed</option></select></label>
+    <label>Search<input id="audienceSearch" type="search" placeholder="Name or email"></label>
+    <button id="audienceExport" type="button" class="secondary-button">Export current view</button>
+  </div>
+  <div class="users-table-wrap"><table class="users-table"><thead><tr><th>Person</th><th>Consent</th><th>Interests</th><th>Joined</th></tr></thead><tbody id="audienceTableBody"></tbody></table></div>
+  <div class="audience-campaign-grid">
+    <form id="campaignDraftForm" class="audience-campaign-form">
+      <p class="eyebrow">Campaign preparation</p><h3>Create a campaign draft</h3><p>This saves a draft and recipient estimate. It does not send email.</p>
+      <label>Internal campaign name<input name="name" required maxlength="120"></label>
+      <label>Audience<select name="audienceType" id="campaignAudienceType"><option value="ALL_SUBSCRIBERS">Newsletter subscribers</option><option value="EVENT_UPDATES">Event updates</option><option value="VOLUNTEER_UPDATES">Volunteer opportunities</option><option value="PARTNER_UPDATES">Partner updates</option><option value="INTEREST">Newsletter subscribers by interest</option></select></label>
+      <label>Interest filters<input name="interestFilters" placeholder="arts-culture, civic-dialogue"></label>
+      <div class="recipient-preview"><strong id="campaignRecipientCount">0</strong><span>eligible recipients</span></div>
+      <label>Email subject<input name="subject" required maxlength="180"></label>
+      <label>Message<textarea name="body" required rows="9" maxlength="20000"></textarea></label>
+      <button type="submit" class="primary-button">Save campaign draft</button><p id="campaignDraftStatus" class="form-status"></p>
+    </form>
+    <section class="audience-drafts"><p class="eyebrow">Draft history</p><h3>Saved campaigns</h3><div id="campaignDraftList"></div></section>
+  </div>
 </section>
 </main>
   </div>
@@ -2055,7 +2073,7 @@
 
 <script src="js/site-content/siteContentManager.js?v=11"></script>
 <script src="js/users/usersPage.js?v=20260806-s2"></script>
-<script src="js/audience/audiencePage.js?v=20260807-v2"></script>
+<script src="js/audience/audiencePage.js?v=20260807-v3"></script>
 <script src="js/core/roleExperience.js?v=20260807-v2"></script>
 <script src="js/router.js?v=20260807-v2"></script>
 <script src="js/app.js?v=20260806-v1"></script>

@@ -1,5 +1,6 @@
 import {
   Body,
+  Post,
   Controller,
   Get,
   Param,
@@ -13,6 +14,7 @@ import { UserRole } from '@prisma/client';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateUserRoleDto } from './dto/update-user-role.dto';
+import { CreateCampaignDraftDto } from './dto/create-campaign-draft.dto';
 import { AuthenticatedUser, UsersService } from './users.service';
 
 type AuthenticatedRequest = { user: AuthenticatedUser };
@@ -36,8 +38,23 @@ export class UsersController {
   }
 
   @Get('audience')
-  audience(@Request() request: AuthenticatedRequest) {
-    return this.usersService.getAudience(request.user);
+  audience(@Request() request: AuthenticatedRequest, @Query('segment') segment = 'ALL', @Query('search') search = '') {
+    return this.usersService.getAudience(request.user, segment, search);
+  }
+
+  @Get('audience/preview')
+  previewAudience(@Request() request: AuthenticatedRequest, @Query('audienceType') audienceType: string, @Query('interests') interests = '') {
+    return this.usersService.previewAudience(request.user, audienceType, interests.split(',').map(v => v.trim()).filter(Boolean));
+  }
+
+  @Get('campaign-drafts')
+  campaignDrafts(@Request() request: AuthenticatedRequest) {
+    return this.usersService.listCampaignDrafts(request.user);
+  }
+
+  @Post('campaign-drafts')
+  createCampaignDraft(@Request() request: AuthenticatedRequest, @Body() dto: CreateCampaignDraftDto) {
+    return this.usersService.createCampaignDraft(request.user, dto);
   }
 
   @Get()

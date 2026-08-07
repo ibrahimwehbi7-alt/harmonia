@@ -25,6 +25,18 @@ export class UpdateProfileDto {
   newsletterOptIn?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  eventUpdatesOptIn?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  volunteerUpdatesOptIn?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  partnerUpdatesOptIn?: boolean;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   interests?: string[];

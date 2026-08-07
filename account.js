@@ -129,7 +129,10 @@
         <p class="eyebrow">Your preferences</p><h3>Choose what feels relevant</h3>
         <form id="memberPreferencesForm" class="member-preferences-form">
           <div class="member-interest-grid">${INTERESTS.map(([value,label]) => `<label><input type="checkbox" name="interests" value="${value}" ${selected.has(value) ? "checked" : ""}> ${label}</label>`).join("")}</div>
-          <label class="harmonia-account-check"><input type="checkbox" name="newsletterOptIn" ${currentUser.newsletterOptIn ? "checked" : ""}> Send me Harmonia's newsletter and event announcements</label>
+          <label class="harmonia-account-check"><input type="checkbox" name="newsletterOptIn" ${currentUser.newsletterOptIn ? "checked" : ""}> Harmonia newsletter</label>
+          <label class="harmonia-account-check"><input type="checkbox" name="eventUpdatesOptIn" ${currentUser.eventUpdatesOptIn ? "checked" : ""}> Event announcements</label>
+          <label class="harmonia-account-check"><input type="checkbox" name="volunteerUpdatesOptIn" ${currentUser.volunteerUpdatesOptIn ? "checked" : ""}> Volunteer opportunities</label>
+          <label class="harmonia-account-check"><input type="checkbox" name="partnerUpdatesOptIn" ${currentUser.partnerUpdatesOptIn ? "checked" : ""}> Partner updates</label>
           <div class="harmonia-account-name-row"><label>First name<input name="firstName" value="${escapeHtml(currentUser.firstName)}" required></label><label>Last name<input name="lastName" value="${escapeHtml(currentUser.lastName)}" required></label></div>
           <button class="primary-button" type="submit">Save preferences</button>
         </form>
@@ -187,7 +190,7 @@
     event.preventDefault(); const form = event.currentTarget; setMessage("Saving…");
     const interests = [...form.querySelectorAll('input[name="interests"]:checked')].map(input => input.value);
     try {
-      currentUser = await request("/users/me", { method: "PATCH", body: JSON.stringify({ firstName: form.firstName.value, lastName: form.lastName.value, newsletterOptIn: form.newsletterOptIn.checked, interests }) });
+      currentUser = await request("/users/me", { method: "PATCH", body: JSON.stringify({ firstName: form.firstName.value, lastName: form.lastName.value, newsletterOptIn: form.newsletterOptIn.checked, eventUpdatesOptIn: form.eventUpdatesOptIn.checked, volunteerUpdatesOptIn: form.volunteerUpdatesOptIn.checked, partnerUpdatesOptIn: form.partnerUpdatesOptIn.checked, interests }) });
       updateButton(); renderMemberSection("profile"); setMessage("Saved.");
     } catch (error) { setMessage(error.message, true); }
   }
