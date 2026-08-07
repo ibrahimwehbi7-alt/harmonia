@@ -4,6 +4,7 @@
   const TOKEN_KEY = "harmonia_access_token";
   const API = String(window.HARMONIA_CONFIG?.apiBaseUrl || "").replace(/\/+$/, "");
   const SITE_SLUG = "the-harmonia-project";
+  const IS_ACCOUNT_PAGE = document.body?.dataset?.accountPage === "true";
   const INTERESTS = [
     ["community-events", "Community events"],
     ["arts-culture", "Arts and culture"],
@@ -47,10 +48,11 @@
   function buildModal() {
     if (document.getElementById("harmonia-account-overlay")) return;
     const overlay = document.createElement("div");
-    overlay.id = "harmonia-account-overlay"; overlay.hidden = true;
+    overlay.id = "harmonia-account-overlay"; overlay.hidden = !IS_ACCOUNT_PAGE;
+    if (IS_ACCOUNT_PAGE) overlay.classList.add("harmonia-account-page");
     overlay.innerHTML = `
       <section class="harmonia-account-card" role="dialog" aria-modal="true" aria-labelledby="harmonia-account-title">
-        <button class="harmonia-account-close" type="button" aria-label="Close">×</button>
+        ${IS_ACCOUNT_PAGE ? `<a class="harmonia-account-close" href="index.html" aria-label="Return to website">×</a>` : `<button class="harmonia-account-close" type="button" aria-label="Close">×</button>`}
         <p class="eyebrow">Harmonia Community</p>
         <h2 id="harmonia-account-title">Welcome</h2>
         <div class="harmonia-account-tabs" data-account-tabs>
@@ -78,7 +80,8 @@
         <p id="harmonia-account-message" class="harmonia-account-message" aria-live="polite"></p>
       </section>`;
     document.body.appendChild(overlay);
-    overlay.querySelector(".harmonia-account-close").onclick = () => { overlay.hidden = true; };
+    const close = overlay.querySelector("button.harmonia-account-close");
+    if (close) close.onclick = () => { overlay.hidden = true; };
     overlay.addEventListener("click", event => { if (event.target === overlay) overlay.hidden = true; });
     overlay.querySelectorAll("[data-account-tab]").forEach(button => button.onclick = () => showTab(button.dataset.accountTab));
     overlay.querySelector("#harmonia-login-form").addEventListener("submit", login);
@@ -218,11 +221,15 @@
   }
   function logout() { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); currentUser = null; updateButton(); showTab("login"); setMessage("Signed out."); }
   function updateButton() { const button = document.getElementById("accountButton"); if (button) button.textContent = currentUser ? currentUser.firstName || "Account" : "Sign in"; }
-  async function openAccount() { buildModal(); document.getElementById("harmonia-account-overlay").hidden = false; if (currentUser) await renderProfile(); else showTab("login"); }
+  async function openAccount(event) {
+    if (!IS_ACCOUNT_PAGE) { event?.preventDefault?.(); window.location.assign("account.html"); return; }
+    buildModal(); document.getElementById("harmonia-account-overlay").hidden = false; if (currentUser) await renderProfile(); else showTab("login");
+  }
   async function initialize() {
     buildModal(); document.getElementById("accountButton")?.addEventListener("click", openAccount);
     if (token()) { try { currentUser = await request("/users/me"); } catch { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); } }
     updateButton();
+    if (IS_ACCOUNT_PAGE) await openAccount();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", initialize, { once: true }); else initialize();
 })();

@@ -624,3 +624,20 @@ body.internal-page .page {
 
 /* Harmonia V2 Availability */
 .availability-week-grid{display:grid;gap:.65rem;margin:1rem 0}.availability-day-row{display:grid;grid-template-columns:minmax(130px,1fr) minmax(110px,.7fr) auto minmax(110px,.7fr);gap:.55rem;align-items:center;padding:.65rem;border:1px solid rgba(15,23,42,.12);border-radius:12px}.availability-fields,.availability-filters{display:flex;gap:1rem;flex-wrap:wrap;align-items:end;margin:1rem 0}.availability-directory{display:grid;gap:.75rem;margin-top:1rem}.availability-person-card{padding:1rem;border:1px solid rgba(15,23,42,.12);border-radius:14px}.availability-person-card div{display:flex;justify-content:space-between;gap:1rem}.availability-person-card span,.availability-person-card small{display:block;opacity:.72}.member-availability-form textarea,#adminAvailabilityForm textarea{width:100%;min-height:90px}@media(max-width:700px){.availability-day-row{grid-template-columns:1fr 1fr}.availability-day-row span{display:none}}
+
+
+/* Authentication stabilization */
+.harmonia-account-form[hidden], #harmonia-profile-panel[hidden], .harmonia-account-tabs[hidden] { display:none !important; }
+.account-button { text-decoration:none; }
+.account-page-body { min-height:100vh; background:#071a35; overflow-x:hidden; }
+.account-page-header { position:fixed; z-index:100001; inset:0 0 auto; display:flex; justify-content:space-between; align-items:center; padding:18px 24px; color:#fff; }
+.account-page-header .wordmark, .account-admin-link { color:inherit; text-decoration:none; }
+.account-admin-link { border:1px solid rgba(255,255,255,.45); border-radius:999px; padding:.65rem 1rem; }
+#harmonia-account-overlay.harmonia-account-page { position:relative; min-height:100vh; width:100%; padding:96px 24px 32px; background:linear-gradient(135deg,#071a35 0%,#12355b 55%,#e6d4b0 160%); align-items:stretch; }
+#harmonia-account-overlay.harmonia-account-page .harmonia-account-card { width:min(1180px,100%); max-height:none; min-height:calc(100vh - 128px); margin:auto; border-radius:32px; padding:clamp(28px,5vw,72px); display:flex; flex-direction:column; justify-content:center; }
+#harmonia-account-overlay.harmonia-account-page .harmonia-account-close { color:#071a35; text-decoration:none; }
+#harmonia-account-overlay.harmonia-account-page .harmonia-account-tabs { max-width:620px; }
+#harmonia-account-overlay.harmonia-account-page .harmonia-account-form { max-width:620px; }
+#harmonia-account-overlay.harmonia-account-page #harmonia-profile-panel:not([hidden]) { width:100%; }
+#harmonia-account-overlay.harmonia-account-page .member-portal-shell { width:100%; }
+@media(max-width:700px){.account-page-header{padding:14px}.account-admin-link{font-size:.82rem}.account-page-header .wordmark{font-size:.82rem}#harmonia-account-overlay.harmonia-account-page{padding:78px 10px 10px}#harmonia-account-overlay.harmonia-account-page .harmonia-account-card{min-height:calc(100vh - 88px);border-radius:22px}}

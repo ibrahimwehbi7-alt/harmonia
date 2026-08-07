@@ -19,6 +19,9 @@
         marketing: "Marketing",
         users: "Users & Access",
         audience: "People & Audience",
+        workforce: "People, Teams & Work",
+        engagement: "Events, Relationships & Communications",
+        intelligence: "Intelligence, Content & Impact",
         "project-workspace":
             "Project Workspace"
     };
@@ -37,7 +40,10 @@
         analytics: "renderAnalytics",
         marketing: "renderMarketing",
         users: "renderUsersPage",
-        audience: "renderAudiencePage"
+        audience: "renderAudiencePage",
+        workforce: "renderWorkforcePage",
+        engagement: "renderEngagementPage",
+        intelligence: "renderIntelligencePage"
     };
 
     let initialized = false;

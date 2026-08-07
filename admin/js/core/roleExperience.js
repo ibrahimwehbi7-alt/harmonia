@@ -1,37 +1,9 @@
-(function(){
-"use strict";
-function user(){return window.HarmoniaIdentity?.getCurrentUser?.()||null;}
-function role(){return window.HarmoniaIdentity?.roleOf?.(user())||"VIEWER";}
-function localPreview(){return Boolean(window.HarmoniaIdentity?.isLocalPreview?.());}
-function apply(){
-  if(localPreview()){
-    document.documentElement.classList.remove("harmonia-gating","workspace-pending");
-    document.body.hidden=false;
-    document.body.style.visibility="visible";
-    document.body.dataset.harmoniaRole="SUPER_ADMIN";
-    document.body.dataset.harmoniaExperience="owner-preview";
-    document.getElementById("workspacePreviewLinks")?.removeAttribute("hidden");
-    document.querySelector('[data-page="audience"]')?.removeAttribute("hidden");
-    document.querySelector('[data-page="availability"]')?.removeAttribute("hidden");
-    return true;
-  }
-  const r=role();
-  if(r!=="ADMIN"&&r!=="SUPER_ADMIN"){
-    location.replace(window.HarmoniaIdentity?.destination?.(r)||"/account/");
-    return false;
-  }
-  document.documentElement.classList.remove("harmonia-gating","workspace-pending");
-  document.body.hidden=false;
-  document.body.style.visibility="visible";
-  document.body.dataset.harmoniaRole=r;
-  document.body.dataset.harmoniaExperience=r==="SUPER_ADMIN"?"owner":"admin";
-  document.getElementById("workspacePreviewLinks")?.toggleAttribute("hidden",r!=="SUPER_ADMIN");
-  document.querySelector('[data-page="audience"]')?.toggleAttribute("hidden",r!=="SUPER_ADMIN");
-  document.querySelector('[data-page="availability"]')?.removeAttribute("hidden");
-  return true;
-}
-document.addEventListener("harmonia:authenticated",apply);
-document.addEventListener("harmonia:admin-ready",apply);
-document.addEventListener("harmonia:identity-changed",e=>{if(e.detail?.authenticated)apply();});
-window.HarmoniaRoleExperience={apply,getRole:role,getExperience:()=>localPreview()?"owner-preview":(role()==="SUPER_ADMIN"?"owner":"admin"),getLandingPage:()=>"dashboard",canAccess:()=>true};
+(function(){'use strict';
+ const allowedAdmin=['dashboard','homepage','about','connect','projects','work','events','notes','files','gallery','partners','messages','finance','analytics','marketing','users','availability','workforce','engagement','intelligence','project-workspace'];
+ const allowedOwner=[...allowedAdmin,'audience'];
+ let role='VIEWER';
+ function sync(){role=String(window.HarmoniaAuth?.getCurrentUser?.()?.role||document.documentElement.dataset.harmoniaRole||'VIEWER').toUpperCase();document.body.dataset.harmoniaRole=role;document.querySelectorAll('.nav-button[data-page]').forEach(b=>{const ok=(role==='SUPER_ADMIN'?allowedOwner:allowedAdmin).includes(b.dataset.page);b.hidden=!ok});return true}
+ function canAccess(page){return (role==='SUPER_ADMIN'?allowedOwner:allowedAdmin).includes(page)}
+ document.addEventListener('harmonia:admin-ready',sync);document.addEventListener('harmonia:authenticated',sync);
+ window.HarmoniaRoleExperience={apply:sync,canAccess,getRole:()=>role,getExperience:()=>role==='SUPER_ADMIN'?'owner':'admin',getLandingPage:()=> 'dashboard'};
 })();

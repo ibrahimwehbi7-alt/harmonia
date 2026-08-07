@@ -19,51 +19,27 @@
     }
 
     function getToken() {
-        return (
-            localStorage.getItem(TOKEN_KEY) ||
-            sessionStorage.getItem(TOKEN_KEY) ||
-            ""
-        );
+        if (window.HarmoniaIdentity?.getToken) return window.HarmoniaIdentity.getToken();
+        return (localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY) || "");
     }
 
     function setToken(token, remember = true) {
-        clearToken();
-
-        if (!token) {
-            return;
+        if (window.HarmoniaIdentity?.SESSION_KEY) {
+            const store = remember ? localStorage : sessionStorage;
+            localStorage.removeItem(window.HarmoniaIdentity.SESSION_KEY);
+            sessionStorage.removeItem(window.HarmoniaIdentity.SESSION_KEY);
+            store.setItem(window.HarmoniaIdentity.SESSION_KEY, JSON.stringify({ accessToken: token, user: window.HarmoniaIdentity.getCurrentUser?.() || null, savedAt: new Date().toISOString() }));
+        } else {
+            localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY);
+            (remember ? localStorage : sessionStorage).setItem(TOKEN_KEY, token);
         }
-
-        const storage = remember
-            ? localStorage
-            : sessionStorage;
-
-        storage.setItem(TOKEN_KEY, token);
-
-        document.dispatchEvent(
-            new CustomEvent("harmonia:auth-changed", {
-                detail: {
-                    authenticated: true
-                }
-            })
-        );
+        document.dispatchEvent(new CustomEvent("harmonia:auth-changed", { detail: { authenticated: Boolean(token) } }));
     }
 
     function clearToken() {
-        localStorage.removeItem(TOKEN_KEY);
-        sessionStorage.removeItem(TOKEN_KEY);
-
-        for (const key of ["accessToken", "token"]) {
-            localStorage.removeItem(key);
-            sessionStorage.removeItem(key);
-        }
-
-        document.dispatchEvent(
-            new CustomEvent("harmonia:auth-changed", {
-                detail: {
-                    authenticated: false
-                }
-            })
-        );
+        if (window.HarmoniaIdentity?.clear) window.HarmoniaIdentity.clear();
+        else { localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); }
+        document.dispatchEvent(new CustomEvent("harmonia:auth-changed", { detail: { authenticated: false } }));
     }
 
     function getOrganizationId() {
