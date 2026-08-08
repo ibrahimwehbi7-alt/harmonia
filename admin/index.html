@@ -4,34 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Harmonia Admin · Version 1</title>
-<script src="../config.js"></script>
-<script src="../shared/identity.js?v=20260807-role-router"></script>
+<script src="../config.js?v=20260807-admin-auth"></script>
+<script src="../shared/identity.js?v=20260807-admin-auth"></script>
 <link rel="stylesheet" href="css/main.css?v=5">
 <link rel="stylesheet" href="css/site-content.css?v=11">
 <link rel="stylesheet" href="css/workforce.css?v=20260807-d2">
 <link rel="stylesheet" href="css/engagement.css?v=20260807-d3">
 <link rel="stylesheet" href="css/intelligence.css?v=20260807-d4">
-<style id="harmonia-workspace-gate-style">
-  html.harmonia-gating body { visibility: hidden !important; }
-</style>
-<script>
-  document.documentElement.classList.add("harmonia-gating");
-  (async function(){
-    try {
-      await window.HarmoniaIdentity.guard(["ADMIN", "SUPER_ADMIN"], { allowLocalPreview: true });
-    } catch (error) {
-      console.error("Admin identity gate failed", error);
-      location.replace("/account/?next=" + encodeURIComponent(location.pathname + location.search + location.hash));
-    }
-  })();
-</script>
-
-<!-- HARMONIA_FRONTEND_2_HEAD -->
-<style>html.harmonia-admin-pending body{visibility:hidden}html.harmonia-admin-ready body{visibility:visible}</style>
-<script>document.documentElement.classList.add('harmonia-admin-pending')</script>
-<script src="/config.js"></script>
-<script src="/shared/identity.js"></script>
-<!-- /HARMONIA_FRONTEND_2_HEAD -->
 </head>
 
 <body>
@@ -2057,8 +2036,9 @@
 
 
 <!-- HARMONIA_FRONTEND_2_BRIDGE -->
-<script src="js/core/adminIdentityBridge.js?v=20260807-role-router"></script>
 <!-- /HARMONIA_FRONTEND_2_BRIDGE -->
+<script src="js/core/authManager.js?v=20260807-auth-compat"></script>
+<script src="js/core/adminIdentityBridge.js?v=20260807-auth-compat"></script>
 <script src="js/core/apiClient.js?v=20260805-5"></script>
 
 <script src="js/core/harmoniaCore.js"></script>
