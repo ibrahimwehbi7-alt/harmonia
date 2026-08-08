@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { UsersService } from '../users/users.service';
+import { AccessResolverService } from './access-resolver.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { JwtPayload } from './types/jwt-payload.type';
@@ -16,70 +17,46 @@ export class AuthService {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly accessResolver: AccessResolverService,
   ) {}
 
   async register(dto: RegisterDto) {
     const email = dto.email.trim().toLowerCase();
-
-    const existingUser = await this.usersService.findByEmail(email);
-
-    if (existingUser) {
+    if (await this.usersService.findByEmail(email)) {
       throw new BadRequestException('Email already exists');
     }
 
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-
     const user = await this.usersService.create({
       email,
-      password: hashedPassword,
+      password: await bcrypt.hash(dto.password, 10),
       firstName: dto.firstName.trim(),
       lastName: dto.lastName.trim(),
     });
 
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    return {
-      accessToken: await this.jwtService.signAsync(payload),
-      user: this.sanitizeUser(user),
-    };
+    return this.issueSession(user.id, user.email, user.role);
   }
 
   async login(dto: LoginDto) {
     const email = dto.email.trim().toLowerCase();
-
     const user = await this.usersService.findByEmail(email);
-
-    if (!user) {
+    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    const passwordMatches = await bcrypt.compare(
-      dto.password,
-      user.password,
-    );
-
-    if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    const payload: JwtPayload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    };
-
-    return {
-      accessToken: await this.jwtService.signAsync(payload),
-      user: this.sanitizeUser(user),
-    };
+    return this.issueSession(user.id, user.email, user.role);
   }
 
-  private sanitizeUser<T extends { password: string }>(user: T) {
-    const { password: _password, ...safeUser } = user;
-    return safeUser;
+  async getMe(userId: string) {
+    return this.accessResolver.resolve(userId);
+  }
+
+  private async issueSession(userId: string, email: string, globalRole: any) {
+    const payload: JwtPayload = { sub: userId, email, role: globalRole };
+    const user = await this.accessResolver.resolve(userId);
+    return {
+      accessToken: await this.jwtService.signAsync(payload),
+      user,
+      access: user.access,
+    };
   }
 }

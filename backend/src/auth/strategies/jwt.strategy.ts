@@ -1,22 +1,20 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 
-import { UsersService } from '../../users/users.service';
+import { AccessResolverService } from '../access-resolver.service';
 import { JwtPayload } from '../types/jwt-payload.type';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     configService: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly accessResolver: AccessResolverService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
 
-    if (!secret) {
-      throw new Error('JWT_SECRET is not configured');
-    }
+    if (!secret) throw new Error('JWT_SECRET is not configured');
 
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -25,21 +23,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  /**
-   * JWTs establish identity only. Authorization is derived from the current
-   * database record so role changes take effect on the next request.
-   */
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findById(payload.sub);
-
-    if (!user) {
-      throw new UnauthorizedException('Account no longer exists');
-    }
-
+    const resolved = await this.accessResolver.resolve(payload.sub);
     return {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
+      userId: resolved.id,
+      email: resolved.email,
+      role: resolved.role,
+      globalRole: resolved.globalRole,
+      membershipRole: resolved.membershipRole,
+      access: resolved.access,
     };
   }
 }

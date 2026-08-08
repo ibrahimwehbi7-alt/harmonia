@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  Request,
-  UseGuards,
-} from '@nestjs/common';
-import { UserRole } from '@prisma/client';
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -14,11 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 type AuthenticatedRequest = {
-  user: {
-    userId: string;
-    email: string;
-    role: UserRole;
-  };
+  user: { userId: string; email: string; role: string };
 };
 
 @Controller('auth')
@@ -38,6 +26,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('me')
   getProfile(@Request() request: AuthenticatedRequest) {
-    return request.user;
+    return this.authService.getMe(request.user.userId);
   }
 }

@@ -64,14 +64,13 @@
 
   async function fetchMe(){
     if(!getToken()) return null;
-    try { return await request("/users/me"); }
-    catch(first){
-      if(/401|unauthor/i.test(String(first?.message||""))) throw first;
-      return await request("/auth/me");
-    }
+    return await request("/auth/me");
   }
   function normalizeRole(value){
-    const role=String(typeof value==="string"?value:value?.role||"").trim().toUpperCase();
+    const raw = typeof value === "string"
+      ? value
+      : (value?.access?.effectiveRole || value?.role || "");
+    const role=String(raw).trim().toUpperCase();
     return ["VIEWER","TEAM_MEMBER","ADMIN","SUPER_ADMIN"].includes(role)?role:"";
   }
   function requireRole(user){
@@ -80,6 +79,10 @@
     return role;
   }
   function destination(value){
+    const workspace=String(value?.access?.workspace||"").toUpperCase();
+    if(workspace==="ADMIN") return "/admin/#dashboard";
+    if(workspace==="TEAM") return "/team/";
+    if(workspace==="MEMBER") return "/member/";
     const role=requireRole(value);
     if(role==="SUPER_ADMIN"||role==="ADMIN") return "/admin/#dashboard";
     if(role==="TEAM_MEMBER") return "/team/";
@@ -151,7 +154,7 @@
     try{user=await boot(true);}catch(err){console.error("Harmonia identity boot failed",err);}
     if(!user){ const next=encodeURIComponent(location.pathname+location.search+location.hash); location.replace(`/account/?next=${next}`); return null; }
     const role=requireRole(user); const allowed=workspaceRoles(workspace);
-    if(allowed.length && !allowed.includes(role)){ location.replace(destination(role)); return null; }
+    if(allowed.length && !allowed.includes(role)){ location.replace(destination(user)); return null; }
     document.documentElement.dataset.harmoniaRole=role;
     reveal();
     document.dispatchEvent(new CustomEvent("harmonia:identity-ready",{detail:{user,role,workspace}}));
