@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { OrganizationRole, UserRole } from '@prisma/client';
 
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 export type WorkspaceKind = 'ADMIN' | 'TEAM' | 'MEMBER';
 
