@@ -10,48 +10,16 @@ let railwayWorkItems = [];
 let workLoadingPromise = null;
 
 function getWorkAuthToken() {
-    // Unified Harmonia identity is authoritative.
-    if (
-        window.HarmoniaIdentity &&
-        typeof window.HarmoniaIdentity.getToken === "function"
-    ) {
-        const token = window.HarmoniaIdentity.getToken();
-
-        if (token) {
-            return token;
-        }
-    }
-
-    // Read the unified session directly as a fallback.
     try {
-        const rawSession =
-            localStorage.getItem("harmonia_session") ||
-            sessionStorage.getItem("harmonia_session");
-
-        if (rawSession) {
-            const session = JSON.parse(rawSession);
-
-            if (session?.accessToken) {
-                return session.accessToken;
-            }
-        }
-    } catch (error) {
-        console.warn(
-            "Could not read Harmonia session:",
-            error
+        const session = JSON.parse(
+            localStorage.getItem("harmonia_session") || "{}"
         );
-    }
 
-    // Temporary backwards compatibility for old sessions.
-    return (
-        localStorage.getItem("harmonia_access_token") ||
-        localStorage.getItem("accessToken") ||
-        localStorage.getItem("token") ||
-        sessionStorage.getItem("harmonia_access_token") ||
-        sessionStorage.getItem("accessToken") ||
-        sessionStorage.getItem("token") ||
-        ""
-    );
+        return session.accessToken || "";
+    } catch (error) {
+        console.error("Failed to read Harmonia session:", error);
+        return "";
+    }
 }
 
 async function workApiRequest(
